@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/game_provider.dart';
-import '../theme/colors.dart';
-import 'building_painter.dart';
-import 'building_construction_widget.dart';
 
 class VillageBuildingsOverlay extends StatefulWidget {
   final String worldId;
@@ -28,6 +25,15 @@ class _VillageBuildingsOverlayState extends State<VillageBuildingsOverlay>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
 
+  // Calibrated Coordinates Map for all 5 Village Plots
+  final Map<int, Offset> _plotCoords = {
+    1: const Offset(0.336, 0.830), // Plot 1
+    2: const Offset(0.673, 0.628), // Locked Plot 2 Exact Position
+    3: const Offset(0.360, 0.438), // Locked Plot 3 Exact Position
+    4: const Offset(0.659, 0.277), // Locked Plot 4 Exact Position
+    5: const Offset(0.310, 0.175), // Plot 5
+  };
+
   @override
   void initState() {
     super.initState();
@@ -43,37 +49,35 @@ class _VillageBuildingsOverlayState extends State<VillageBuildingsOverlay>
     super.dispose();
   }
 
-  int? _getStageFromLevelId(String? levelId) {
-    if (levelId == null) return null;
-    switch (levelId) {
-      case 'w1_l1':
-        return 1;
-      case 'w1_l2':
-        return 2;
-      case 'w1_l3':
-        return 3;
-      case 'w1_l4':
-        return 4;
-      case 'w1_l5':
-        return 5;
-      default:
-        return null;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Village building elements ONLY exist for World 1!
     if (widget.worldId != 'world_1') {
       return const SizedBox.shrink();
     }
 
     final provider = Provider.of<GameProvider>(context);
-    final cutsceneStage =
-        _getStageFromLevelId(provider.pendingConstructionLevelId);
 
-    // Active stage where the Persistent Builder Worker is currently working!
-    final activeWorkerStage = (widget.completedCount + 1).clamp(1, 5);
+    // Check build completion status for each level's house stage
+    // Figures ONLY show after the user has actually built that stage!
+    final bool stage1Built =
+        (provider.player.buildingStages['hut_level_1'] ??
+         provider.player.buildingStages['hut_w1_l1'] ?? 0) > 0;
+
+    final bool stage2Built =
+        (provider.player.buildingStages['hut_level_2'] ??
+         provider.player.buildingStages['hut_w1_l2'] ?? 0) > 0;
+
+    final bool stage3Built =
+        (provider.player.buildingStages['hut_level_3'] ??
+         provider.player.buildingStages['hut_w1_l3'] ?? 0) > 0;
+
+    final bool stage4Built =
+        (provider.player.buildingStages['hut_level_4'] ??
+         provider.player.buildingStages['hut_w1_l4'] ?? 0) > 0;
+
+    final bool stage5Built =
+        (provider.player.buildingStages['hut_level_5'] ??
+         provider.player.buildingStages['hut_w1_l5'] ?? 0) > 0;
 
     return SizedBox(
       width: widget.width,
@@ -81,116 +85,86 @@ class _VillageBuildingsOverlayState extends State<VillageBuildingsOverlay>
       child: AnimatedBuilder(
         animation: _animController,
         builder: (context, child) {
-          final animVal = _animController.value;
-
           return Stack(
             clipBehavior: Clip.none,
             children: [
-              // STAGE 1: STONE AGE TIMBER COTTAGE & CAMPFIRE
-              if (widget.completedCount >= 1)
+              // LEVEL 1 STAGE
+              if (stage1Built)
                 Positioned(
-                  left: widget.width * 0.48,
-                  top: 60,
-                  child: Column(
-                    children: [
-                      _buildEraBadge('🛖 Stone Age'),
-                      const SizedBox(height: 2),
-                      CustomPaint(
-                        size: const Size(72, 72),
-                        painter: BuildingPainter(stage: 1, animValue: animVal),
-                      ),
-                    ],
+                  left: widget.width * _plotCoords[1]!.dx,
+                  top: widget.height * _plotCoords[1]!.dy,
+                  child: FractionalTranslation(
+                    translation: const Offset(-0.5, -0.5),
+                    child: Image.asset(
+                      'assets/images/house_stage1.png',
+                      width: widget.width * 0.274,
+                      height: widget.width * 0.274,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
 
-              // STAGE 2: TIMBER & WINDMILL
-              if (widget.completedCount >= 2)
+              // LEVEL 2 STAGE (Plot 2 - Locked to left: 0.673, top: 0.628)
+              if (stage2Built)
                 Positioned(
-                  left: widget.width * 0.02,
-                  top: 120,
-                  child: Column(
-                    children: [
-                      _buildEraBadge('🌾 Timber Age'),
-                      const SizedBox(height: 2),
-                      CustomPaint(
-                        size: const Size(72, 72),
-                        painter: BuildingPainter(stage: 2, animValue: animVal),
-                      ),
-                    ],
+                  left: widget.width * _plotCoords[2]!.dx,
+                  top: widget.height * _plotCoords[2]!.dy,
+                  child: FractionalTranslation(
+                    translation: const Offset(-0.5, -0.5),
+                    child: Image.asset(
+                      'assets/images/house_stage2.png',
+                      width: widget.width * 0.284,
+                      height: widget.width * 0.284,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
 
-              // STAGE 3: IRON AGE SMITHY & MARKET
-              if (widget.completedCount >= 3)
+              // LEVEL 3 STAGE (Plot 3 - Locked to left: 0.360, top: 0.438)
+              if (stage3Built)
                 Positioned(
-                  left: widget.width * 0.22,
-                  top: 360,
-                  child: Column(
-                    children: [
-                      _buildEraBadge('⚒️ Iron Age'),
-                      const SizedBox(height: 2),
-                      CustomPaint(
-                        size: const Size(72, 72),
-                        painter: BuildingPainter(stage: 3, animValue: animVal),
-                      ),
-                    ],
+                  left: widget.width * _plotCoords[3]!.dx,
+                  top: widget.height * _plotCoords[3]!.dy,
+                  child: FractionalTranslation(
+                    translation: const Offset(-0.5, -0.5),
+                    child: Image.asset(
+                      'assets/images/house_stage3.png',
+                      width: widget.width * 0.274,
+                      height: widget.width * 0.274,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
 
-              // STAGE 4: CASTLE AGE FORTRESS
-              if (widget.completedCount >= 4)
+              // LEVEL 4 STAGE (Plot 4 - Locked to left: 0.659, top: 0.277)
+              if (stage4Built)
                 Positioned(
-                  left: widget.width * 0.58,
-                  top: 460,
-                  child: Column(
-                    children: [
-                      _buildEraBadge('🏰 Castle Age'),
-                      const SizedBox(height: 2),
-                      CustomPaint(
-                        size: const Size(76, 76),
-                        painter: BuildingPainter(stage: 4, animValue: animVal),
-                      ),
-                    ],
+                  left: widget.width * _plotCoords[4]!.dx,
+                  top: widget.height * _plotCoords[4]!.dy,
+                  child: FractionalTranslation(
+                    translation: const Offset(-0.5, -0.5),
+                    child: Image.asset(
+                      'assets/images/house_stage4.png',
+                      width: widget.width * 0.284,
+                      height: widget.width * 0.284,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
 
-              // STAGE 5: IMPERIAL CITADEL MONUMENT
-              if (widget.completedCount >= 5)
+              // LEVEL 5 STAGE
+              if (stage5Built)
                 Positioned(
-                  left: widget.width * 0.30,
-                  top: 580,
-                  child: Column(
-                    children: [
-                      _buildEraBadge('👑 Imperial Age'),
-                      const SizedBox(height: 2),
-                      CustomPaint(
-                        size: const Size(80, 80),
-                        painter: BuildingPainter(stage: 5, animValue: animVal),
-                      ),
-                    ],
-                  ),
-                ),
-
-              // PERSISTENT ANIMATED BUILDER WORKER (ALWAYS WORKING BESIDE ACTIVE CONSTRUCTION PLOT!)
-              Positioned(
-                left: _getWorkerX(activeWorkerStage, widget.width),
-                top: _getWorkerY(activeWorkerStage),
-                child: PersistentBuilderManWidget(
-                  activeStage: activeWorkerStage,
-                  animValue: animVal,
-                ),
-              ),
-
-              // LEVEL COMPLETE UPGRADE CUTSCENE ANIMATION
-              if (cutsceneStage != null)
-                Positioned(
-                  left: _getStageX(cutsceneStage, widget.width),
-                  top: _getStageY(cutsceneStage),
-                  child: BuildingConstructionWidget(
-                    stage: cutsceneStage,
-                    onComplete: () {
-                      provider.clearPendingConstruction();
-                    },
+                  left: widget.width * _plotCoords[5]!.dx,
+                  top: widget.height * _plotCoords[5]!.dy,
+                  child: FractionalTranslation(
+                    translation: const Offset(-0.5, -0.5),
+                    child: Image.asset(
+                      'assets/images/house_stage5.png',
+                      width: widget.width * 0.294,
+                      height: widget.width * 0.294,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
             ],
@@ -198,93 +172,5 @@ class _VillageBuildingsOverlayState extends State<VillageBuildingsOverlay>
         },
       ),
     );
-  }
-
-  Widget _buildEraBadge(String title) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: GameColors.navyText.withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: GameColors.sunnyYellow, width: 1.5),
-      ),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontFamily: 'Fredoka',
-          fontSize: 9,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-
-  double _getWorkerX(int stage, double containerWidth) {
-    switch (stage) {
-      case 1:
-        return containerWidth * 0.48; // Below Stone Age Hut
-      case 2:
-        return containerWidth * 0.03; // Below Timber Windmill
-      case 3:
-        return containerWidth * 0.05; // Far left grassy clearing away from Node 3 & Path!
-      case 4:
-        return containerWidth * 0.58; // Below Castle Fortress
-      case 5:
-        return containerWidth * 0.24; // Below Citadel Monument
-      default:
-        return containerWidth * 0.45;
-    }
-  }
-
-  double _getWorkerY(int stage) {
-    switch (stage) {
-      case 1:
-        return 125;
-      case 2:
-        return 185;
-      case 3:
-        return 400;
-      case 4:
-        return 515;
-      case 5:
-        return 625;
-      default:
-        return 100;
-    }
-  }
-
-  double _getStageX(int stage, double containerWidth) {
-    switch (stage) {
-      case 1:
-        return containerWidth * 0.46;
-      case 2:
-        return containerWidth * 0.01;
-      case 3:
-        return containerWidth * 0.20;
-      case 4:
-        return containerWidth * 0.56;
-      case 5:
-        return containerWidth * 0.28;
-      default:
-        return containerWidth * 0.4;
-    }
-  }
-
-  double _getStageY(int stage) {
-    switch (stage) {
-      case 1:
-        return 50;
-      case 2:
-        return 110;
-      case 3:
-        return 350;
-      case 4:
-        return 450;
-      case 5:
-        return 570;
-      default:
-        return 200;
-    }
   }
 }

@@ -7,7 +7,7 @@ class BottomGameNavBar extends StatelessWidget {
 
   const BottomGameNavBar({
     super.key,
-    required this.currentIndex,
+    this.currentIndex = 0,
     required this.onTap,
   });
 
@@ -22,7 +22,6 @@ class BottomGameNavBar extends StatelessWidget {
     ];
 
     return Container(
-      height: 72,
       decoration: BoxDecoration(
         color: GameColors.surfaceWarm,
         border: const Border(
@@ -30,62 +29,70 @@ class BottomGameNavBar extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: GameColors.navyText.withOpacity(0.08),
+            color: GameColors.navyText.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, -3),
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(items.length, (index) {
-          final isSelected = currentIndex == index;
-          final item = items[index];
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(items.length, (index) {
+              final isSelected = currentIndex == index;
+              final item = items[index];
 
-          return GestureDetector(
-            onTap: () => onTap(index),
-            behavior: HitTestBehavior.opaque,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: isSelected
-                  ? BoxDecoration(
-                      color: GameColors.turquoise.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          color: GameColors.turquoise.withOpacity(0.4),
-                          width: 1.5),
-                    )
-                  : null,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AnimatedScale(
-                    scale: isSelected ? 1.2 : 1.0,
-                    duration: const Duration(milliseconds: 150),
-                    child: Text(
-                      item['emoji'] as String,
-                      style: const TextStyle(fontSize: 22),
-                    ),
+              return GestureDetector(
+                onTap: () => onTap(index),
+                behavior: HitTestBehavior.opaque,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: isSelected
+                      ? BoxDecoration(
+                          color: GameColors.turquoise.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                              color: GameColors.turquoise.withValues(alpha: 0.4),
+                              width: 1.5),
+                        )
+                      : null,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AnimatedScale(
+                        scale: isSelected ? 1.15 : 1.0,
+                        duration: const Duration(milliseconds: 150),
+                        child: Text(
+                          item['emoji'] as String,
+                          style: const TextStyle(fontSize: 20),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item['label'] as String,
+                        style: TextStyle(
+                          fontFamily: 'Fredoka',
+                          fontSize: 10,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.w500,
+                          color: isSelected
+                              ? GameColors.skyBlueDark
+                              : GameColors.navyTextMuted,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    item['label'] as String,
-                    style: TextStyle(
-                      fontFamily: 'Fredoka',
-                      fontSize: 11,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.w500,
-                      color: isSelected
-                          ? GameColors.skyBlueDark
-                          : GameColors.navyTextMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
+                ),
+              );
+            }),
+          ),
+        ),
       ),
     );
   }

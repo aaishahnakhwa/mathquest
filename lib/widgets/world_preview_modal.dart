@@ -48,12 +48,10 @@ class WorldPreviewModal extends StatelessWidget {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: GameColors.surfaceWarm,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border(
-          top: BorderSide(color: GameColors.sunnyYellow, width: 4),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        border: Border.all(color: GameColors.sunnyYellow, width: 3),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -7,6 +7,7 @@ import '../widgets/game_button.dart';
 import '../widgets/battle_arena_widget.dart';
 import '../widgets/visual_math_helper.dart';
 import '../widgets/concept_explanation_dialog.dart';
+import '../widgets/in_game_audio_dialog.dart';
 import 'level_complete_screen.dart';
 
 class GameplayScreen extends StatefulWidget {
@@ -248,10 +249,35 @@ class _GameplayScreenState extends State<GameplayScreen>
                                 padding: const EdgeInsets.symmetric(horizontal: 1.0),
                                 child: Text(
                                   hasHeart ? '❤️' : '🖤',
-                                  style: const TextStyle(fontSize: 16),
+                                  style: const TextStyle(fontSize: 15),
                                 ),
                               );
                             }),
+                          ),
+                          const SizedBox(width: 6),
+
+                          // Quick In-Game Volume Adjustment Button 🎵
+                          GestureDetector(
+                            onTap: () => InGameAudioDialog.show(context),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF6C5CE7).withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.5),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.volume_up_rounded,
+                                  size: 18,
+                                  color: Color(0xFF6C5CE7),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -723,47 +749,18 @@ class _GameplayScreenState extends State<GameplayScreen>
                              const SizedBox(height: 16),
 
                             // BOTTOM ACTION BUTTON
-                            if (!provider.isAnswerSubmitted)
-                              GameButton(
-                                text: 'ATTACK & SUBMIT ⚔️',
-                                backgroundColor: GameColors.sunnyYellow,
-                                shadowColor: GameColors.yellowDark,
-                                textColor: GameColors.navyText,
-                                onPressed: provider.selectedAnswerIndex != null
-                                    ? () => provider.submitAnswer()
-                                    : null,
-                                height: 52,
-                              )
-                            else if (provider.isCorrectAnswer)
-                              GameButton(
-                                text: '⭐  GREAT JOB! NEXT ➔  ⭐',
-                                backgroundColor: GameColors.freshGreen,
-                                shadowColor: GameColors.freshGreenDark,
-                                textColor: Colors.white,
-                                onPressed: () => provider.nextQuestion(),
-                                height: 52,
-                              )
-                            else
-                              GameButton(
-                                text: 'EXPLAIN CONCEPT 💡',
-                                backgroundColor: GameColors.coral,
-                                shadowColor: GameColors.coralDark,
-                                textColor: Colors.white,
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    barrierDismissible: false,
-                                    builder: (context) => ConceptExplanationDialog(
-                                      question: question,
-                                      onContinue: () {
-                                        Navigator.pop(context);
-                                        provider.nextQuestion();
-                                      },
-                                    ),
-                                  );
-                                },
-                                height: 52,
-                              ),
+                            GameButton(
+                              text: provider.isAnswerSubmitted
+                                  ? 'ATTACKING... ⚔️'
+                                  : 'ATTACK & SUBMIT ⚔️',
+                              backgroundColor: GameColors.sunnyYellow,
+                              shadowColor: GameColors.yellowDark,
+                              textColor: GameColors.navyText,
+                              onPressed: (!provider.isAnswerSubmitted && provider.selectedAnswerIndex != null)
+                                  ? () => _handleSubmitAnswer(provider)
+                                  : null,
+                              height: 52,
+                            ),
                           ],
                         ),
                       ),
@@ -776,6 +773,43 @@ class _GameplayScreenState extends State<GameplayScreen>
         );
       },
     );
+  }
+
+  void _handleSubmitAnswer(GameProvider provider) {
+    if (provider.selectedAnswerIndex == null || provider.isAnswerSubmitted) {
+      return;
+    }
+
+    final currentQIndex = provider.currentQuestionIndex;
+    provider.submitAnswer();
+
+    // Automatically transition to next question after attack animation completes
+    Future.delayed(const Duration(milliseconds: 1400), () {
+      if (!mounted) return;
+
+      if (provider.isAnswerSubmitted &&
+          provider.currentQuestionIndex == currentQIndex) {
+        if (provider.levelHeartsLeft <= 0 || provider.isLevelCompleted) {
+          return;
+        }
+
+        if (provider.isCorrectAnswer) {
+          provider.nextQuestion();
+        } else {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => ConceptExplanationDialog(
+              question: provider.currentQuestion!,
+              onContinue: () {
+                Navigator.pop(context);
+                provider.nextQuestion();
+              },
+            ),
+          );
+        }
+      }
+    });
   }
 
   void _handleHintTap(BuildContext context, GameProvider provider) {

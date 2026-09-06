@@ -53,11 +53,11 @@ class _GameButtonState extends State<GameButton> {
         decoration: BoxDecoration(
           color: isEnabled
               ? widget.backgroundColor
-              : GameColors.nodeLocked.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(26),
+              : const Color(0xFFD2E4DF),
+          borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: isEnabled ? widget.shadowColor : Colors.grey.shade400,
-            width: 2.5,
+            color: isEnabled ? widget.shadowColor : const Color(0xFFB5C6C1),
+            width: 2.0,
           ),
           boxShadow: isEnabled
               ? [
@@ -75,7 +75,7 @@ class _GameButtonState extends State<GameButton> {
               : [],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(26),
           child: Stack(
             children: [
               // Top Glassy Highlight Strip (Candy Specular Reflection)
@@ -124,7 +124,7 @@ class _GameButtonState extends State<GameButton> {
                               fontFamily: 'Fredoka',
                               fontSize: widget.fontSize,
                               fontWeight: FontWeight.bold,
-                              color: isEnabled ? widget.textColor : Colors.grey.shade600,
+                              color: isEnabled ? widget.textColor : const Color(0xFF6A7B76),
                               letterSpacing: 0.6,
                               shadows: isEnabled
                                   ? const [

@@ -94,39 +94,42 @@ class VisualMathHelper extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // 1st Number 3D Glossy Block Group (Blue)
-                        _build3DBlockGroup(
-                          count: num1,
-                          fillColor: const Color(0xFF2563EB),
-                          topColor: const Color(0xFF93C5FD),
-                          bottomColor: const Color(0xFF1D4ED8),
-                          textColor: const Color(0xFF1D4ED8),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                          child: Text(
-                            isAddition ? '+' : '-',
-                            style: const TextStyle(
-                              fontFamily: 'Fredoka',
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: GameColors.navyText,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // 1st Number 3D Glossy Block Group (Blue)
+                          _build3DBlockGroup(
+                            count: num1,
+                            fillColor: const Color(0xFF2563EB),
+                            topColor: const Color(0xFF93C5FD),
+                            bottomColor: const Color(0xFF1D4ED8),
+                            textColor: const Color(0xFF1D4ED8),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                            child: Text(
+                              isAddition ? '+' : '-',
+                              style: const TextStyle(
+                                fontFamily: 'Fredoka',
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: GameColors.navyText,
+                              ),
                             ),
                           ),
-                        ),
-                        // 2nd Number 3D Glossy Block Group (Green)
-                        _build3DBlockGroup(
-                          count: num2,
-                          fillColor: const Color(0xFF16A34A),
-                          topColor: const Color(0xFF86EFAC),
-                          bottomColor: const Color(0xFF15803D),
-                          textColor: const Color(0xFF15803D),
-                        ),
-                      ],
+                          // 2nd Number 3D Glossy Block Group (Green)
+                          _build3DBlockGroup(
+                            count: num2,
+                            fillColor: const Color(0xFF16A34A),
+                            topColor: const Color(0xFF86EFAC),
+                            bottomColor: const Color(0xFF15803D),
+                            textColor: const Color(0xFF15803D),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -151,31 +154,29 @@ class VisualMathHelper extends StatelessWidget {
 
     return Column(
       children: [
-        Wrap(
-          spacing: 3.5,
-          runSpacing: 3.5,
-          alignment: WrapAlignment.center,
-          children: List.generate(
-            displayCount,
-            (index) => Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                color: fillColor,
-                borderRadius: BorderRadius.circular(4),
-                border: Border(
-                  top: BorderSide(color: topColor, width: 2.5),
-                  left: BorderSide(color: topColor, width: 2),
-                  right: BorderSide(color: bottomColor, width: 2),
-                  bottom: BorderSide(color: bottomColor, width: 3),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 105),
+          child: Wrap(
+            spacing: 3.5,
+            runSpacing: 3.5,
+            alignment: WrapAlignment.center,
+            children: List.generate(
+              displayCount,
+              (index) => Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: fillColor,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: topColor, width: 2),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 3,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 3,
-                    offset: Offset(0, 2),
-                  ),
-                ],
               ),
             ),
           ),

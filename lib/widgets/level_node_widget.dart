@@ -10,6 +10,7 @@ class LevelNodeWidget extends StatefulWidget {
   final bool isCurrent;
   final int earnedStars;
   final VoidCallback onTap;
+  final VoidCallback? onBuildTap;
   final String playerAvatarId;
   final String playerHatId;
 
@@ -21,6 +22,7 @@ class LevelNodeWidget extends StatefulWidget {
     required this.isCurrent,
     required this.earnedStars,
     required this.onTap,
+    this.onBuildTap,
     this.playerAvatarId = 'hero_wizard',
     this.playerHatId = 'hat_wizard_starter',
   });
@@ -55,283 +57,217 @@ class _LevelNodeWidgetState extends State<LevelNodeWidget>
 
   @override
   Widget build(BuildContext context) {
-    // Vibrant World Map Theme Gradients & 3D Bevel Borders
-    final Gradient jellyGradient = widget.isCurrent
-        ? const LinearGradient(
-            colors: [Color(0xFF4ADE80), Color(0xFF22C55E), Color(0xFF15803D)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          )
-        : widget.isCompleted
-            ? const LinearGradient(
-                colors: [Color(0xFFFDE047), Color(0xFFF59E0B), Color(0xFFB45309)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              )
-            : widget.isUnlocked
-                ? const LinearGradient(
-                    colors: [Color(0xFF38BDF8), Color(0xFF0284C7), Color(0xFF0369A1)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  )
-                : const LinearGradient(
-                    colors: [Color(0xFF64748B), Color(0xFF475569), Color(0xFF1E293B)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  );
+    final int buttonIndex = widget.level.levelNumber <= 11
+        ? widget.level.levelNumber
+        : (((widget.level.levelNumber - 1) % 10) + 1);
 
-    final Color bevelBorderColor = widget.isCurrent
-        ? const Color(0xFFF59E0B)
-        : widget.isCompleted
-            ? const Color(0xFF92400E)
-            : widget.isUnlocked
-                ? const Color(0xFF075985)
-                : const Color(0xFF0F172A);
-
-    return GestureDetector(
-      onTap: widget.isUnlocked ? widget.onTap : null,
+    return SizedBox(
+      width: 120,
+      height: 70,
       child: Stack(
         clipBehavior: Clip.none,
-        alignment: Alignment.center,
+        alignment: Alignment.centerLeft,
         children: [
-          // Full-Body Player Wizard Character standing directly ON THE ROPE PATH!
-          if (widget.isCurrent)
-            Positioned(
-              top: -68,
-              child: AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  final bobY = (_pulseAnimation.value - 1.0) * 6;
-                  return Transform.translate(
-                    offset: Offset(0, -bobY),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Hero Badge Pill Above Hat
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFFDF0), Color(0xFFFEF08A)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Text(
-                            'YOU HERE! 🚀',
-                            style: TextStyle(
-                              fontFamily: 'Fredoka',
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF78350F),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-
-                        // Full-Body Wizard Character Asset or Avatar Fallback
-                        if (widget.playerAvatarId == 'hero_wizard')
-                          Image.asset(
-                            'assets/images/wizard_character.png',
-                            height: 72,
-                            fit: BoxFit.contain,
-                          )
-                        else
-                          AvatarWidget(
-                            avatarId: widget.playerAvatarId,
-                            equippedHatId: widget.playerHatId,
-                            size: 44,
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-
-          // Glowing Aura for Active Node
-          if (widget.isCurrent)
-            AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _pulseAnimation.value,
-                  child: Container(
-                    width: 86,
-                    height: 86,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
-                    ),
-                  ),
-                );
-              },
-            ),
-
-          // Main GLOSSY 3D JELLY CANDY BUTTON
-          Container(
-            width: 76,
-            height: 76,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: jellyGradient,
-              border: Border.all(
-                color: bevelBorderColor,
-                width: 4.5,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: bevelBorderColor.withValues(alpha: 0.5),
-                  offset: const Offset(0, 7),
-                  blurRadius: 4,
-                ),
-                BoxShadow(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  offset: const Offset(0, -2),
-                  blurRadius: 2,
-                ),
-              ],
-            ),
-            child: Stack(
-              clipBehavior: Clip.hardEdge,
-              children: [
-                // 1. TOP-LEFT GLASSY CRESCENT HIGHLIGHT (Candy Crush Gloss Specular Reflection)
-                Positioned(
-                  top: 3,
-                  left: 10,
-                  right: 10,
-                  child: Container(
-                    height: 26,
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(35),
-                        bottom: Radius.circular(15),
-                      ),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.white.withValues(alpha: 0.7),
-                          Colors.white.withValues(alpha: 0.05),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 2. CENTER CONTENT (BOLD 3D LEVEL NUMBER OR TRANSLUCENT LOCK)
-                Center(
-                  child: widget.isUnlocked
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              '${widget.level.levelNumber}',
-                              style: const TextStyle(
-                                fontFamily: 'Fredoka',
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black45,
-                                    offset: Offset(1.5, 2.5),
-                                    blurRadius: 3,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (widget.isCurrent)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFFFFDF0), Color(0xFFFEF08A)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black38,
-                                      blurRadius: 3,
-                                      offset: Offset(0, 1.5),
+          // 1. LEVEL NODE SPRITE & AVATAR
+          Positioned(
+            left: 0,
+            top: 0,
+            width: 58,
+            height: 50,
+            child: GestureDetector(
+              onTap: widget.isUnlocked ? widget.onTap : null,
+              behavior: HitTestBehavior.opaque,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  // Full-Body Player Wizard Character standing directly above current level node
+                  if (widget.isCurrent)
+                    Positioned(
+                      top: -44,
+                      child: AnimatedBuilder(
+                        animation: _pulseAnimation,
+                        builder: (context, child) {
+                          final bobY = (_pulseAnimation.value - 1.0) * 4;
+                          return Transform.translate(
+                            offset: Offset(0, -bobY),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Hero Badge Pill Above Hat
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFFFFFDF0),
+                                        Color(0xFFFEF08A)
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                child: const Text(
-                                  'PLAY',
-                                  style: TextStyle(
-                                    fontFamily: 'Fredoka',
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF78350F),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                        color: const Color(0xFFF59E0B),
+                                        width: 1.2),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 2.5,
+                                        offset: Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Text(
+                                    'YOU HERE! 🚀',
+                                    style: TextStyle(
+                                      fontFamily: 'Fredoka',
+                                      fontSize: 7.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF78350F),
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
-                        )
-                      : Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Text(
-                              '${widget.level.levelNumber}',
-                              style: TextStyle(
-                                fontFamily: 'Fredoka',
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white.withValues(alpha: 0.4),
-                              ),
+                                const SizedBox(height: 1.5),
+
+                                // Full-Body Wizard Character Asset or Avatar Fallback
+                                if (widget.playerAvatarId == 'hero_wizard')
+                                  Image.asset(
+                                    'assets/images/wizard_character.png',
+                                    height: 48,
+                                    fit: BoxFit.contain,
+                                  )
+                                else
+                                  AvatarWidget(
+                                    avatarId: widget.playerAvatarId,
+                                    equippedHatId: widget.playerHatId,
+                                    size: 34,
+                                  ),
+                              ],
                             ),
-                            Icon(
-                              Icons.lock_rounded,
-                              color: Colors.white.withValues(alpha: 0.85),
-                              size: 22,
+                          );
+                        },
+                      ),
+                    ),
+
+                  // Glowing Aura for Active Node
+                  if (widget.isCurrent)
+                    AnimatedBuilder(
+                      animation: _pulseAnimation,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: _pulseAnimation.value,
+                          child: Container(
+                            width: 58,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFFF59E0B)
+                                  .withValues(alpha: 0.35),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                  // INDIVIDUAL EXTRACTED LEVEL BUTTON SPRITE (Unlocked 1..5 OR Custom Locked Asset)
+                  SizedBox(
+                    width: 58,
+                    height: 50,
+                    child: Image.asset(
+                      widget.isUnlocked
+                          ? 'assets/images/level_btn_$buttonIndex.png'
+                          : 'assets/images/level_btn_locked.png',
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.high,
+                    ),
+                  ),
+
+                  // Star Badges under completed nodes
+                  if (widget.isCompleted || widget.earnedStars > 0)
+                    Positioned(
+                      bottom: -12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: GameColors.surfaceWarm,
+                          borderRadius: BorderRadius.circular(10),
+                          border:
+                              Border.all(color: GameColors.sunnyYellow, width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: GameColors.navyText.withValues(alpha: 0.2),
+                              blurRadius: 3,
+                              offset: const Offset(0, 1.5),
                             ),
                           ],
                         ),
-                ),
-              ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(3, (index) {
+                            final hasStar = index < widget.earnedStars;
+                            return Icon(
+                              hasStar
+                                  ? Icons.star_rounded
+                                  : Icons.star_border_rounded,
+                              size: 11,
+                              color: hasStar
+                                  ? GameColors.coinGold
+                                  : Colors.grey.shade400,
+                            );
+                          }),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
 
-          // Star Badges under completed nodes
-          if (widget.isCompleted || widget.earnedStars > 0)
+          // 2. SIDE UPGRADE / BUILD BUTTON (Compact pill badge)
+          if (widget.isCompleted && widget.onBuildTap != null)
             Positioned(
-              bottom: -12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(
-                  color: GameColors.surfaceWarm,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: GameColors.sunnyYellow, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: GameColors.navyText.withValues(alpha: 0.2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+              left: 48,
+              top: 24,
+              child: GestureDetector(
+                onTap: widget.onBuildTap,
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
                     ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(3, (index) {
-                    final hasStar = index < widget.earnedStars;
-                    return Icon(
-                      hasStar ? Icons.star_rounded : Icons.star_border_rounded,
-                      size: 15,
-                      color: hasStar
-                          ? GameColors.coinGold
-                          : Colors.grey.shade400,
-                    );
-                  }),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white, width: 1.2),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 2.5,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        'assets/images/wood_log.png',
+                        height: 9,
+                      ),
+                      const SizedBox(width: 2),
+                      const Text(
+                        'BUILD 🛠️',
+                        style: TextStyle(
+                          fontFamily: 'Fredoka',
+                          fontSize: 7.5,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

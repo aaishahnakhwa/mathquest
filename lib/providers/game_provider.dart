@@ -6,15 +6,18 @@ import '../models/level_model.dart';
 import '../models/question_model.dart';
 import '../models/achievement_model.dart';
 import '../models/shop_model.dart';
+import '../models/building_model.dart';
 import '../data/world_repository.dart';
 import '../data/achievements_repository.dart';
 import '../data/shop_repository.dart';
+import '../data/village_repository.dart';
 
 class GameProvider extends ChangeNotifier {
   PlayerModel _player = const PlayerModel();
   List<WorldModel> _worlds = [];
   List<AchievementModel> _achievements = [];
   List<ShopItemModel> _shopItems = [];
+  List<BuildingModel> _buildings = [];
 
   bool _isLoading = true;
   int _currentTab = 1; // Default tab: Map
@@ -36,6 +39,7 @@ class GameProvider extends ChangeNotifier {
   int _earnedXp = 0;
   int _earnedCoins = 0;
   int _earnedGems = 0;
+  int _earnedWoodLogs = 0;
   String? _pendingConstructionLevelId;
 
   // Getters
@@ -43,6 +47,15 @@ class GameProvider extends ChangeNotifier {
   List<WorldModel> get worlds => _worlds;
   List<AchievementModel> get achievements => _achievements;
   List<ShopItemModel> get shopItems => _shopItems;
+  List<BuildingModel> get buildings => _buildings;
+
+  List<BuildingModel> get activeBuildings {
+    return _buildings.map((b) {
+      final currentStage = _player.buildingStages[b.id] ?? 0;
+      return b.copyWith(currentStage: currentStage);
+    }).toList();
+  }
+
   bool get isLoading => _isLoading;
   int get currentTab => _currentTab;
 
@@ -65,11 +78,41 @@ class GameProvider extends ChangeNotifier {
   int get earnedXp => _earnedXp;
   int get earnedCoins => _earnedCoins;
   int get earnedGems => _earnedGems;
+  int get earnedWoodLogs => _earnedWoodLogs;
   String? get pendingConstructionLevelId => _pendingConstructionLevelId;
 
   void clearPendingConstruction() {
     _pendingConstructionLevelId = null;
     notifyListeners();
+  }
+
+  bool upgradeBuilding(String buildingId) {
+    final buildingList = activeBuildings;
+    final index = buildingList.indexWhere((b) => b.id == buildingId);
+    if (index == -1) return false;
+
+    final building = buildingList[index];
+    if (building.isMaxStage) return false;
+
+    final coinCost = building.nextStageCoinCost;
+    final woodCost = building.nextStageWoodCost;
+
+    if (_player.coins < coinCost || _player.woodLogs < woodCost) {
+      return false;
+    }
+
+    final newBuildingStages = Map<String, int>.from(_player.buildingStages);
+    newBuildingStages[buildingId] = building.currentStage + 1;
+
+    _player = _player.copyWith(
+      coins: _player.coins - coinCost,
+      woodLogs: _player.woodLogs - woodCost,
+      buildingStages: newBuildingStages,
+    );
+
+    saveProgress();
+    notifyListeners();
+    return true;
   }
 
   GameProvider() {
@@ -83,6 +126,7 @@ class GameProvider extends ChangeNotifier {
     _worlds = WorldRepository.getAllWorlds();
     _achievements = AchievementsRepository.getDefaultAchievements();
     _shopItems = ShopRepository.getDefaultShopItems();
+    _buildings = VillageRepository.getDefaultBuildings();
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -95,6 +139,13 @@ class GameProvider extends ChangeNotifier {
     } catch (e) {
       _player = const PlayerModel();
     }
+
+    final hasCompletedW1 = _player.completedLevelIds.contains('w1_l5') || _player.totalStars >= 10;
+    final Set<String> cleanedUnlockedWorlds = {'world_1'};
+    if (hasCompletedW1) {
+      cleanedUnlockedWorlds.add('world_2');
+    }
+    _player = _player.copyWith(unlockedWorldIds: cleanedUnlockedWorlds);
 
     _updateStreakOnLoad();
     _updateAchievementsProgress();
@@ -135,6 +186,43 @@ class GameProvider extends ChangeNotifier {
     }
   }
 
+  void updatePlayerName(String name) {
+    if (name.trim().isEmpty) return;
+    _player = _player.copyWith(name: name.trim());
+    saveProgress();
+    notifyListeners();
+  }
+
+  void toggleHaptics() {
+    _player = _player.copyWith(isHapticsEnabled: !_player.isHapticsEnabled);
+    saveProgress();
+    notifyListeners();
+  }
+
+  void toggleAutoShowExplanations() {
+    _player =
+        _player.copyWith(autoShowExplanations: !_player.autoShowExplanations);
+    saveProgress();
+    notifyListeners();
+  }
+
+  Future<void> resetGameProgress() async {
+    _player = const PlayerModel();
+    _currentTab = 1;
+    _activeLevel = null;
+    _isLevelCompleted = false;
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('player_data');
+    } catch (e) {
+      debugPrint('Error clearing player prefs: $e');
+    }
+
+    saveProgress();
+    notifyListeners();
+  }
+
   void updatePlayerAvatar({
     String? name,
     String? avatarId,
@@ -169,6 +257,7 @@ class GameProvider extends ChangeNotifier {
     _earnedXp = 0;
     _earnedCoins = 0;
     _earnedGems = 0;
+    _earnedWoodLogs = 0;
 
     notifyListeners();
   }
@@ -291,6 +380,7 @@ class GameProvider extends ChangeNotifier {
 
     final levelBonusGems = _earnedStars == 3 ? 3 : 1;
     final levelBonusCoins = 30 + (_earnedStars * 10);
+    _earnedWoodLogs = 2 + (_earnedStars * 1); // 2 to 5 Wood Logs per level!
     _earnedXp += 50 + (_earnedStars * 20);
 
     final newLevelStars = Map<String, int>.from(_player.levelStars);
@@ -331,6 +421,7 @@ class GameProvider extends ChangeNotifier {
       totalXp: newTotalXp,
       coins: _player.coins + levelBonusCoins,
       gems: _player.gems + levelBonusGems,
+      woodLogs: _player.woodLogs + _earnedWoodLogs,
       levelStars: newLevelStars,
       completedLevelIds: newCompletedLevels,
       unlockedWorldIds: newUnlockedWorlds,
@@ -455,12 +546,24 @@ class GameProvider extends ChangeNotifier {
   }
 
   bool isLevelUnlocked(LevelModel level) {
+    if (level.id == 'w1_l1' || level.levelNumber == 1) {
+      return true;
+    }
+
+    if (!_player.unlockedWorldIds.contains(level.worldId)) {
+      return false;
+    }
+
     final world = _worlds.firstWhere(
       (w) => w.id == level.worldId,
       orElse: () => _worlds.first,
     );
     final index = world.levels.indexWhere((l) => l.id == level.id);
-    if (index <= 0) return true;
+    if (index < 0) return false;
+
+    if (index == 0) {
+      return true;
+    }
 
     final previousLevel = world.levels[index - 1];
     return _player.completedLevelIds.contains(previousLevel.id) ||

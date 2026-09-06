@@ -18,8 +18,12 @@ class PlayerModel {
   final Set<String> unlockedWorldIds;
   final Map<String, int> levelStars;
   final List<String> inventoryItemIds;
+  final int woodLogs;
+  final Map<String, int> buildingStages;
   final int questionsSolved;
   final int correctAnswers;
+  final bool isHapticsEnabled;
+  final bool autoShowExplanations;
 
   const PlayerModel({
     this.id = 'player_1',
@@ -30,6 +34,8 @@ class PlayerModel {
     this.totalXp = 0,
     this.coins = 100,
     this.gems = 5, // 5 Starter Gems as requested!
+    this.woodLogs = 5, // 5 Starter Wood Logs!
+    this.buildingStages = const {},
     this.streakDays = 1,
     this.lastPlayDate = '',
     this.equippedHatId = 'none',
@@ -41,6 +47,8 @@ class PlayerModel {
     this.inventoryItemIds = const ['default_explorer'],
     this.questionsSolved = 0,
     this.correctAnswers = 0,
+    this.isHapticsEnabled = true,
+    this.autoShowExplanations = true,
   });
 
   int get xpForNextLevel => level * 100;
@@ -66,6 +74,8 @@ class PlayerModel {
     int? totalXp,
     int? coins,
     int? gems,
+    int? woodLogs,
+    Map<String, int>? buildingStages,
     int? streakDays,
     String? lastPlayDate,
     String? equippedHatId,
@@ -77,6 +87,8 @@ class PlayerModel {
     List<String>? inventoryItemIds,
     int? questionsSolved,
     int? correctAnswers,
+    bool? isHapticsEnabled,
+    bool? autoShowExplanations,
   }) {
     return PlayerModel(
       id: id ?? this.id,
@@ -87,6 +99,8 @@ class PlayerModel {
       totalXp: totalXp ?? this.totalXp,
       coins: coins ?? this.coins,
       gems: gems ?? this.gems,
+      woodLogs: woodLogs ?? this.woodLogs,
+      buildingStages: buildingStages ?? this.buildingStages,
       streakDays: streakDays ?? this.streakDays,
       lastPlayDate: lastPlayDate ?? this.lastPlayDate,
       equippedHatId: equippedHatId ?? this.equippedHatId,
@@ -98,6 +112,8 @@ class PlayerModel {
       inventoryItemIds: inventoryItemIds ?? this.inventoryItemIds,
       questionsSolved: questionsSolved ?? this.questionsSolved,
       correctAnswers: correctAnswers ?? this.correctAnswers,
+      isHapticsEnabled: isHapticsEnabled ?? this.isHapticsEnabled,
+      autoShowExplanations: autoShowExplanations ?? this.autoShowExplanations,
     );
   }
 
@@ -111,6 +127,8 @@ class PlayerModel {
       'totalXp': totalXp,
       'coins': coins,
       'gems': gems,
+      'woodLogs': woodLogs,
+      'buildingStages': buildingStages,
       'streakDays': streakDays,
       'lastPlayDate': lastPlayDate,
       'equippedHatId': equippedHatId,
@@ -122,6 +140,8 @@ class PlayerModel {
       'inventoryItemIds': inventoryItemIds,
       'questionsSolved': questionsSolved,
       'correctAnswers': correctAnswers,
+      'isHapticsEnabled': isHapticsEnabled,
+      'autoShowExplanations': autoShowExplanations,
     };
   }
 
@@ -135,6 +155,8 @@ class PlayerModel {
       totalXp: map['totalXp'] ?? 0,
       coins: map['coins'] ?? 100,
       gems: map['gems'] ?? 5,
+      woodLogs: map['woodLogs'] ?? 5,
+      buildingStages: Map<String, int>.from(map['buildingStages'] ?? {}),
       streakDays: map['streakDays'] ?? 1,
       lastPlayDate: map['lastPlayDate'] ?? '',
       equippedHatId: map['equippedHatId'] ?? 'none',
@@ -146,6 +168,8 @@ class PlayerModel {
       inventoryItemIds: List<String>.from(map['inventoryItemIds'] ?? ['default_explorer']),
       questionsSolved: map['questionsSolved'] ?? 0,
       correctAnswers: map['correctAnswers'] ?? 0,
+      isHapticsEnabled: map['isHapticsEnabled'] ?? true,
+      autoShowExplanations: map['autoShowExplanations'] ?? true,
     );
   }
 

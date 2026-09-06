@@ -4,6 +4,7 @@ import '../providers/game_provider.dart';
 import '../theme/colors.dart';
 import '../widgets/game_button.dart';
 import '../widgets/reward_chest_opening_animation.dart';
+import 'foundation_builder_screen.dart';
 
 class LevelCompleteScreen extends StatelessWidget {
   const LevelCompleteScreen({super.key});
@@ -94,12 +95,45 @@ class LevelCompleteScreen extends StatelessWidget {
                       children: [
                         _buildStatRow('Correct Answers',
                             '${provider.levelCorrectCount} / ${level?.questions.length ?? 5}'),
-                        const Divider(height: 20),
+                        const Divider(height: 16),
                         _buildStatRow('Hints Used', '${provider.hintsUsedInLevel}'),
-                        const Divider(height: 20),
+                        const Divider(height: 16),
                         _buildStatRow('XP Gained', '+${provider.earnedXp} XP',
                             valueColor: GameColors.xpBlue),
-                        const Divider(height: 20),
+                        const Divider(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Wood Logs Earned',
+                              style: TextStyle(
+                                fontFamily: 'Nunito',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: GameColors.navyTextSecondary,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Image.asset(
+                                  'assets/images/wood_log.png',
+                                  height: 20,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '+${provider.earnedWoodLogs}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Fredoka',
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: GameColors.streakOrange,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const Divider(height: 16),
                         _buildStatRow(
                             'Overall Accuracy',
                             '${player.accuracyPercentage.toStringAsFixed(0)}%',
@@ -107,7 +141,57 @@ class LevelCompleteScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+
+                  // GO TO HOUSE BUILDER BUTTON (Only if not already built)
+                  if (level != null &&
+                      !((player.buildingStages['hut_${level.id}'] ??
+                          player.buildingStages['hut_level_${level.levelNumber}'] ?? 0) > 0))
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  FoundationBuilderScreen(level: level),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: GameColors.skyBlue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          elevation: 4,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🛠️ ', style: TextStyle(fontSize: 18)),
+                            const Text(
+                              'BUILD / UPGRADE HOUSE',
+                              style: TextStyle(
+                                fontFamily: 'Fredoka',
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Image.asset(
+                              'assets/images/wood_log.png',
+                              height: 18,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 8),
 
                   // BOTTOM NAVIGATION ACTION BUTTONS
                   Row(
