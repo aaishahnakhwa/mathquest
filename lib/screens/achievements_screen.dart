@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/game_provider.dart';
 import '../models/achievement_model.dart';
 import '../theme/colors.dart';
@@ -62,15 +63,17 @@ class AchievementsScreen extends StatelessWidget {
     GameProvider provider,
     AchievementModel ach,
   ) {
-    final progressRatio =
-        (ach.currentProgress / ach.requiredProgress).clamp(0.0, 1.0);
+    final progressRatio = (ach.currentProgress / ach.requiredProgress).clamp(
+      0.0,
+      1.0,
+    );
     final isCompleted = ach.isCompleted;
     final isClaimed = ach.isClaimed;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isClaimed ? Colors.white.withOpacity(0.6) : Colors.white,
+        color: isClaimed ? Colors.white.withValues(alpha: 0.6) : Colors.white,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isCompleted && !isClaimed
@@ -80,7 +83,7 @@ class AchievementsScreen extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: GameColors.navyText.withOpacity(0.06),
+            color: GameColors.navyText.withValues(alpha: 0.06),
             blurRadius: 6,
           ),
         ],
@@ -94,7 +97,7 @@ class AchievementsScreen extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isCompleted
-                  ? GameColors.sunnyYellow.withOpacity(0.25)
+                  ? GameColors.sunnyYellow.withValues(alpha: 0.25)
                   : Colors.grey.shade200,
               border: Border.all(
                 color: isCompleted
@@ -104,10 +107,7 @@ class AchievementsScreen extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: Text(
-                ach.iconEmoji,
-                style: const TextStyle(fontSize: 28),
-              ),
+              child: Text(ach.iconEmoji, style: const TextStyle(fontSize: 28)),
             ),
           ),
           const SizedBox(width: 14),

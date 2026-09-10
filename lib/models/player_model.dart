@@ -55,11 +55,11 @@ class PlayerModel {
   double get xpProgressRatio => (currentXp / xpForNextLevel).clamp(0.0, 1.0);
   int get totalStars => levelStars.values.fold(0, (sum, stars) => sum + stars);
 
-  String get currentWorldId => unlockedWorldIds.contains('world_4')
-      ? 'world_4'
-      : (unlockedWorldIds.contains('world_3')
-          ? 'world_3'
-          : (unlockedWorldIds.contains('world_2') ? 'world_2' : 'world_1'));
+  String get currentWorldId => unlockedWorldIds.contains('world_3')
+      ? 'world_3'
+      : unlockedWorldIds.contains('world_2')
+      ? 'world_2'
+      : 'world_1';
 
   double get accuracyPercentage => questionsSolved == 0
       ? 100.0
@@ -163,9 +163,13 @@ class PlayerModel {
       equippedOutfitId: map['equippedOutfitId'] ?? 'default_explorer',
       equippedAccessoryId: map['equippedAccessoryId'] ?? 'none',
       completedLevelIds: Set<String>.from(map['completedLevelIds'] ?? []),
-      unlockedWorldIds: Set<String>.from(map['unlockedWorldIds'] ?? ['world_1']),
+      unlockedWorldIds: Set<String>.from(
+        map['unlockedWorldIds'] ?? ['world_1'],
+      ),
       levelStars: Map<String, int>.from(map['levelStars'] ?? {}),
-      inventoryItemIds: List<String>.from(map['inventoryItemIds'] ?? ['default_explorer']),
+      inventoryItemIds: List<String>.from(
+        map['inventoryItemIds'] ?? ['default_explorer'],
+      ),
       questionsSolved: map['questionsSolved'] ?? 0,
       correctAnswers: map['correctAnswers'] ?? 0,
       isHapticsEnabled: map['isHapticsEnabled'] ?? true,

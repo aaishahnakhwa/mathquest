@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../models/level_model.dart';
 import '../providers/game_provider.dart';
 import '../theme/colors.dart';
@@ -7,10 +8,76 @@ import '../theme/colors.dart';
 class FoundationBuilderScreen extends StatefulWidget {
   final LevelModel level;
 
-  const FoundationBuilderScreen({
-    super.key,
-    required this.level,
-  });
+  const FoundationBuilderScreen({super.key, required this.level});
+
+  static String imageForProgress({
+    required int progress,
+    required int levelNumber,
+  }) {
+    final visualStage = progress.clamp(0, GameProvider.levelHouseFinalStage);
+    if (levelNumber == 3) {
+      switch (visualStage) {
+        case 0:
+          return 'assets/images/house_stage2.png';
+        case 1:
+          return 'assets/images/level3_construction_1.png';
+        case 2:
+          return 'assets/images/level3_construction_2.png';
+        case 3:
+          return 'assets/images/level3_construction_3.png';
+        case GameProvider.levelHouseFinalStage:
+        default:
+          return 'assets/images/house_stage3.png';
+      }
+    }
+
+    if (levelNumber == 4) {
+      switch (visualStage) {
+        case 0:
+          return 'assets/images/house_stage3.png';
+        case 1:
+          return 'assets/images/level4_construction_1.png';
+        case 2:
+          return 'assets/images/level4_construction_2.png';
+        case 3:
+          return 'assets/images/level4_construction_3.png';
+        case GameProvider.levelHouseFinalStage:
+        default:
+          return 'assets/images/house_stage4.png';
+      }
+    }
+
+    if (levelNumber == 5) {
+      switch (visualStage) {
+        case 0:
+          return 'assets/images/house_stage4.png';
+        case 1:
+          return 'assets/images/level5_construction_1.png';
+        case 2:
+          return 'assets/images/level5_construction_2.png';
+        case 3:
+          return 'assets/images/level5_construction_3.png';
+        case GameProvider.levelHouseFinalStage:
+        default:
+          return 'assets/images/house_stage5.png';
+      }
+    }
+
+    switch (visualStage) {
+      case 0:
+        return 'assets/images/const_stage1.png';
+      case 1:
+        return 'assets/images/construction_stage_1.png';
+      case 2:
+        return 'assets/images/construction_stage_2.png';
+      case 3:
+        return 'assets/images/construction_stage_3.png';
+      case GameProvider.levelHouseFinalStage:
+      default:
+        final finalBuildingIndex = levelNumber.clamp(1, 5);
+        return 'assets/images/house_stage$finalBuildingIndex.png';
+    }
+  }
 
   @override
   State<FoundationBuilderScreen> createState() =>
@@ -20,7 +87,7 @@ class FoundationBuilderScreen extends StatefulWidget {
 class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
     with SingleTickerProviderStateMixin {
   int _logsLaid = 0;
-  final int _targetLogs = 4;
+  final int _targetLogs = GameProvider.levelHouseFinalStage;
   bool _isBuilding = false;
   bool _isCompleted = false;
 
@@ -47,8 +114,7 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
     super.didChangeDependencies();
     if (!_initialized) {
       final provider = Provider.of<GameProvider>(context, listen: false);
-      final currentStage =
-          provider.player.buildingStages['hut_${widget.level.id}'] ?? 0;
+      final currentStage = provider.levelHouseStage(widget.level);
       _logsLaid = currentStage.clamp(0, _targetLogs);
       if (_logsLaid >= _targetLogs) {
         _isCompleted = true;
@@ -64,7 +130,9 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
   }
 
   void _layWoodLog(GameProvider provider) {
-    if (_logsLaid >= _targetLogs || provider.player.woodLogs <= 0 || _isBuilding) {
+    if (_logsLaid >= _targetLogs ||
+        provider.player.woodLogs <= 0 ||
+        _isBuilding) {
       return;
     }
 
@@ -72,12 +140,18 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
       _isBuilding = true;
     });
 
-    final buildingId = 'hut_${widget.level.id}';
-    provider.upgradeBuilding(buildingId);
+    final didBuild = provider.advanceLevelHouseConstruction(widget.level);
+    if (!didBuild) {
+      setState(() {
+        _isBuilding = false;
+      });
+      return;
+    }
 
     _animController.forward(from: 0.0).then((_) {
+      if (!mounted) return;
       setState(() {
-        _logsLaid++;
+        _logsLaid = provider.levelHouseStage(widget.level);
         _isBuilding = false;
         if (_logsLaid >= _targetLogs) {
           _isCompleted = true;
@@ -88,21 +162,10 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
 
   int get _stageIndex => widget.level.levelNumber.clamp(1, 5);
 
-  String _getStageImage() {
-    if (_logsLaid <= 0) {
-      // Stage 1: Construction Asset 1 — empty land/foundation
-      return 'assets/images/const_stage1.png';
-    } else if (_logsLaid == 1) {
-      // Stage 2: Construction Asset 2 — stone foundation
-      return 'assets/images/const_stage2.png';
-    } else if (_logsLaid < _targetLogs) {
-      // Stage 3: Construction Asset 3 — wooden structural frame
-      return 'assets/images/const_stage3.png';
-    } else {
-      // Stage 4: EXISTING building image already present in project (completed building)
-      return 'assets/images/house_stage$_stageIndex.png';
-    }
-  }
+  String _getStageImage() => FoundationBuilderScreen.imageForProgress(
+    progress: _logsLaid,
+    levelNumber: _stageIndex,
+  );
 
   String _getStageTitle() {
     if (_logsLaid <= 0) {
@@ -140,8 +203,10 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
             backgroundColor: GameColors.surfaceWarm,
             elevation: 2,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_rounded,
-                  color: GameColors.navyText),
+              icon: const Icon(
+                Icons.arrow_back_rounded,
+                color: GameColors.navyText,
+              ),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
@@ -191,12 +256,15 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                       // Available Wood Logs Inventory Counter Pill
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.4)),
+                            color: Colors.white.withValues(alpha: 0.4),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -247,9 +315,24 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                         children: [
                           // Animated Switcher showing actual construction stage image
                           AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 600),
-                            switchInCurve: Curves.easeOutBack,
+                            duration: const Duration(milliseconds: 350),
+                            switchInCurve: Curves.easeOut,
                             switchOutCurve: Curves.easeIn,
+                            transitionBuilder: (child, animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: ScaleTransition(
+                                  scale: Tween<double>(begin: 0.97, end: 1)
+                                      .animate(
+                                        CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeOut,
+                                        ),
+                                      ),
+                                  child: child,
+                                ),
+                              );
+                            },
                             child: Padding(
                               key: ValueKey<String>(_getStageImage()),
                               padding: const EdgeInsets.all(16.0),
@@ -306,12 +389,18 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                             bottom: 16,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
-                                color: GameColors.surfaceWarm.withValues(alpha: 0.95),
+                                color: GameColors.surfaceWarm.withValues(
+                                  alpha: 0.95,
+                                ),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                    color: GameColors.sunnyYellow, width: 2),
+                                  color: GameColors.sunnyYellow,
+                                  width: 2,
+                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withValues(alpha: 0.15),
@@ -323,8 +412,10 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Text('🪵 ',
-                                      style: TextStyle(fontSize: 18)),
+                                  const Text(
+                                    '🪵 ',
+                                    style: TextStyle(fontSize: 18),
+                                  ),
                                   Text(
                                     'House Logs Placed: $_logsLaid / $_targetLogs',
                                     style: const TextStyle(
@@ -437,7 +528,9 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                             onPressed: () => Navigator.pop(context),
                             style: OutlinedButton.styleFrom(
                               side: const BorderSide(
-                                  color: GameColors.navyText, width: 2),
+                                color: GameColors.navyText,
+                                width: 2,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),

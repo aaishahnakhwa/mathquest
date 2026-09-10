@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/game_provider.dart';
 import '../theme/colors.dart';
 import '../widgets/game_button.dart';
@@ -42,14 +43,16 @@ class LevelCompleteScreen extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        const Text('⚔️ VICTORY! ⚔️',
-                            style: TextStyle(
-                              fontFamily: 'Fredoka',
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white70,
-                              letterSpacing: 1.5,
-                            )),
+                        const Text(
+                          '⚔️ VICTORY! ⚔️',
+                          style: TextStyle(
+                            fontFamily: 'Fredoka',
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white70,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           level?.title.toUpperCase() ?? 'LEVEL COMPLETE!',
@@ -82,7 +85,10 @@ class LevelCompleteScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: GameColors.cardBorder, width: 2),
+                      border: Border.all(
+                        color: GameColors.cardBorder,
+                        width: 2,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: GameColors.navyText.withValues(alpha: 0.05),
@@ -93,13 +99,21 @@ class LevelCompleteScreen extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        _buildStatRow('Correct Answers',
-                            '${provider.levelCorrectCount} / ${level?.questions.length ?? 5}'),
+                        _buildStatRow(
+                          'Correct Answers',
+                          '${provider.levelCorrectCount} / ${level?.questions.length ?? 5}',
+                        ),
                         const Divider(height: 16),
-                        _buildStatRow('Hints Used', '${provider.hintsUsedInLevel}'),
+                        _buildStatRow(
+                          'Hints Used',
+                          '${provider.hintsUsedInLevel}',
+                        ),
                         const Divider(height: 16),
-                        _buildStatRow('XP Gained', '+${provider.earnedXp} XP',
-                            valueColor: GameColors.xpBlue),
+                        _buildStatRow(
+                          'XP Gained',
+                          '+${provider.earnedXp} XP',
+                          valueColor: GameColors.xpBlue,
+                        ),
                         const Divider(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -135,9 +149,10 @@ class LevelCompleteScreen extends StatelessWidget {
                         ),
                         const Divider(height: 16),
                         _buildStatRow(
-                            'Overall Accuracy',
-                            '${player.accuracyPercentage.toStringAsFixed(0)}%',
-                            valueColor: GameColors.freshGreen),
+                          'Overall Accuracy',
+                          '${player.accuracyPercentage.toStringAsFixed(0)}%',
+                          valueColor: GameColors.freshGreen,
+                        ),
                       ],
                     ),
                   ),
@@ -145,8 +160,8 @@ class LevelCompleteScreen extends StatelessWidget {
 
                   // GO TO HOUSE BUILDER BUTTON (Only if not already built)
                   if (level != null &&
-                      !((player.buildingStages['hut_${level.id}'] ??
-                          player.buildingStages['hut_level_${level.levelNumber}'] ?? 0) > 0))
+                      level.worldId == 'world_1' &&
+                      !provider.isLevelHouseComplete(level))
                     Container(
                       width: double.infinity,
                       margin: const EdgeInsets.only(bottom: 12),
@@ -222,11 +237,13 @@ class LevelCompleteScreen extends StatelessWidget {
                                 (w) => w.id == level.worldId,
                                 orElse: () => provider.worlds.first,
                               );
-                              final currentIndex = world.levels
-                                  .indexWhere((l) => l.id == level.id);
+                              final currentIndex = world.levels.indexWhere(
+                                (l) => l.id == level.id,
+                              );
                               if (currentIndex != -1 &&
                                   currentIndex + 1 < world.levels.length) {
-                                final nextLevel = world.levels[currentIndex + 1];
+                                final nextLevel =
+                                    world.levels[currentIndex + 1];
                                 provider.startLevel(nextLevel);
                               }
                             }

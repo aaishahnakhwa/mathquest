@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/game_provider.dart';
 import '../services/audio_service.dart';
 import '../models/shop_model.dart';
@@ -87,7 +88,7 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
               borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: GameColors.skyBlueDark.withOpacity(0.3),
+                  color: GameColors.skyBlueDark.withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -115,15 +116,20 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.edit_rounded,
-                          color: Colors.white70, size: 20),
+                      icon: const Icon(
+                        Icons.edit_rounded,
+                        color: Colors.white70,
+                        size: 20,
+                      ),
                       onPressed: () => _showEditNameDialog(context, provider),
                     ),
                   ],
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: GameColors.sunnyYellow,
                     borderRadius: BorderRadius.circular(14),
@@ -166,14 +172,26 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
             mainAxisSpacing: 12,
             childAspectRatio: 1.5,
             children: [
-              _buildStatCard('🔥 Streak', '${player.streakDays} Days',
-                  GameColors.streakOrange),
-              _buildStatCard('⭐ Total Stars', '${player.totalStars}',
-                  GameColors.coinGold),
-              _buildStatCard('🎯 Accuracy',
-                  '${player.accuracyPercentage.toStringAsFixed(0)}%', GameColors.freshGreen),
-              _buildStatCard('🧠 Solved', '${player.questionsSolved} Qs',
-                  GameColors.xpBlue),
+              _buildStatCard(
+                '🔥 Streak',
+                '${player.streakDays} Days',
+                GameColors.streakOrange,
+              ),
+              _buildStatCard(
+                '⭐ Total Stars',
+                '${player.totalStars}',
+                GameColors.coinGold,
+              ),
+              _buildStatCard(
+                '🎯 Accuracy',
+                '${player.accuracyPercentage.toStringAsFixed(0)}%',
+                GameColors.freshGreen,
+              ),
+              _buildStatCard(
+                '🧠 Solved',
+                '${player.questionsSolved} Qs',
+                GameColors.xpBlue,
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -201,8 +219,9 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(22),
                   border: Border.all(
-                      color: GameColors.skyBlueDark.withValues(alpha: 0.3),
-                      width: 2),
+                    color: GameColors.skyBlueDark.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: GameColors.skyBlueDark.withValues(alpha: 0.08),
@@ -223,8 +242,9 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color:
-                                    GameColors.skyBlue.withValues(alpha: 0.15),
+                                color: GameColors.skyBlue.withValues(
+                                  alpha: 0.15,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -261,7 +281,9 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
                         Switch(
                           value: audioService.isMusicEnabled,
                           activeThumbColor: GameColors.skyBlueDark,
-                          activeTrackColor: GameColors.skyBlue.withValues(alpha: 0.3),
+                          activeTrackColor: GameColors.skyBlue.withValues(
+                            alpha: 0.3,
+                          ),
                           onChanged: (val) => audioService.toggleMusic(),
                         ),
                       ],
@@ -285,9 +307,13 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
                           child: SliderTheme(
                             data: SliderThemeData(
                               activeTrackColor: GameColors.skyBlueDark,
-                              inactiveTrackColor: GameColors.skyBlue.withValues(alpha: 0.2),
+                              inactiveTrackColor: GameColors.skyBlue.withValues(
+                                alpha: 0.2,
+                              ),
                               thumbColor: GameColors.skyBlueDark,
-                              overlayColor: GameColors.skyBlue.withValues(alpha: 0.15),
+                              overlayColor: GameColors.skyBlue.withValues(
+                                alpha: 0.15,
+                              ),
                             ),
                             child: Slider(
                               value: audioService.musicVolume,
@@ -339,7 +365,9 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
               color: Colors.white,
               borderRadius: BorderRadius.circular(22),
               border: Border.all(
-                  color: GameColors.turquoise.withValues(alpha: 0.3), width: 2),
+                color: GameColors.turquoise.withValues(alpha: 0.3),
+                width: 2,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: GameColors.turquoise.withValues(alpha: 0.08),
@@ -384,7 +412,7 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
                     ),
                     Switch(
                       value: player.isHapticsEnabled,
-                      activeColor: GameColors.turquoise,
+                      activeThumbColor: GameColors.turquoise,
                       onChanged: (val) => provider.toggleHaptics(),
                     ),
                   ],
@@ -426,7 +454,7 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
                     ),
                     Switch(
                       value: player.autoShowExplanations,
-                      activeColor: GameColors.turquoise,
+                      activeThumbColor: GameColors.turquoise,
                       onChanged: (val) => provider.toggleAutoShowExplanations(),
                     ),
                   ],
@@ -515,8 +543,9 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           title: const Text(
             '✏️ Change Hero Name',
             style: TextStyle(fontFamily: 'Fredoka', color: GameColors.navyText),
@@ -554,8 +583,9 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           title: const Text(
             '⚠️ Reset All Progress?',
             style: TextStyle(fontFamily: 'Fredoka', color: Colors.red),
@@ -570,15 +600,15 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
               child: const Text('CANCEL'),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () {
                 provider.resetGameProgress();
                 Navigator.pop(ctx);
               },
-              child:
-                  const Text('YES, RESET', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'YES, RESET',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -592,12 +622,9 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3), width: 2),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
         boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.06),
-            blurRadius: 6,
-          ),
+          BoxShadow(color: color.withValues(alpha: 0.06), blurRadius: 6),
         ],
       ),
       child: Column(
@@ -637,9 +664,11 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
       separatorBuilder: (context, index) => const SizedBox(height: 14),
       itemBuilder: (context, index) {
         final item = shopItems[index];
-        final isUnlocked = provider.player.inventoryItemIds.contains(item.id) ||
+        final isUnlocked =
+            provider.player.inventoryItemIds.contains(item.id) ||
             item.isUnlocked;
-        final isEquipped = (item.id == provider.player.equippedHatId ||
+        final isEquipped =
+            (item.id == provider.player.equippedHatId ||
             item.id == provider.player.equippedOutfitId ||
             item.id == provider.player.equippedAccessoryId);
 
@@ -649,14 +678,12 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: isEquipped
-                  ? GameColors.turquoise
-                  : GameColors.cardBorder,
+              color: isEquipped ? GameColors.turquoise : GameColors.cardBorder,
               width: isEquipped ? 2.5 : 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: GameColors.navyText.withOpacity(0.06),
+                color: GameColors.navyText.withValues(alpha: 0.06),
                 blurRadius: 6,
               ),
             ],
@@ -671,8 +698,10 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
                   color: GameColors.skyBlueLight,
                 ),
                 child: Center(
-                  child: Text(item.iconEmoji,
-                      style: const TextStyle(fontSize: 28)),
+                  child: Text(
+                    item.iconEmoji,
+                    style: const TextStyle(fontSize: 28),
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -705,10 +734,12 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
 
               if (isEquipped)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: GameColors.turquoise.withOpacity(0.2),
+                    color: GameColors.turquoise.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(

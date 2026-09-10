@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/colors.dart';
 
 class MathGuideWidget extends StatelessWidget {
@@ -21,7 +22,7 @@ class MathGuideWidget extends StatelessWidget {
         border: Border.all(color: GameColors.skyBlue, width: 2.5),
         boxShadow: [
           BoxShadow(
-            color: GameColors.navyText.withOpacity(0.08),
+            color: GameColors.navyText.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),

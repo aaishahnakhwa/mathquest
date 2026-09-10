@@ -1,32 +1,18 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class MapBackgroundPainter extends CustomPainter {
   final String worldId;
   final int completedLevelsCount;
 
-  MapBackgroundPainter({
-    required this.worldId,
-    this.completedLevelsCount = 0,
-  });
+  MapBackgroundPainter({required this.worldId, this.completedLevelsCount = 0});
 
   @override
   void paint(Canvas canvas, Size size) {
     switch (worldId) {
       case 'world_2':
-        _paintFractionForestWorld(canvas, size);
-        break;
-      case 'world_3':
-        _paintPuzzlePeakWorld(canvas, size);
-        break;
-      case 'world_4':
-        _paintAlgebraValleyWorld(canvas, size);
-        break;
-      case 'world_5':
-        _paintGeometryIslesWorld(canvas, size);
-        break;
-      case 'world_6':
-        _paintMasterCitadelWorld(canvas, size);
+        _paintDoubleDigitValleyWorld(canvas, size);
         break;
       case 'world_1':
       default:
@@ -49,7 +35,10 @@ class MapBackgroundPainter extends CustomPainter {
     }
 
     if (completedLevelsCount >= 3) {
-      _drawVillageCottages(canvas, Offset(size.width * 0.22, size.height * 0.53));
+      _drawVillageCottages(
+        canvas,
+        Offset(size.width * 0.22, size.height * 0.53),
+      );
       _drawWheatFarm(canvas, Offset(size.width * 0.12, size.height * 0.56));
     }
 
@@ -58,13 +47,16 @@ class MapBackgroundPainter extends CustomPainter {
     }
 
     if (completedLevelsCount >= 5) {
-      _drawVictoryArchway(canvas, Offset(size.width * 0.30, size.height * 0.85));
+      _drawVictoryArchway(
+        canvas,
+        Offset(size.width * 0.30, size.height * 0.85),
+      );
       _drawCelebrationBanners(canvas, size);
     }
   }
 
-  // --- WORLD 2: FRACTION FOREST (Rich Teal/Emerald Ancient Woods & Magic Runes) ---
-  void _paintFractionForestWorld(Canvas canvas, Size size) {
+  // --- WORLD 2: DOUBLE-DIGIT VALLEY FALLBACK ---
+  void _paintDoubleDigitValleyWorld(Canvas canvas, Size size) {
     // Mystical Forest Sky Gradient
     final skyGradient = LinearGradient(
       begin: Alignment.topCenter,
@@ -77,13 +69,26 @@ class MapBackgroundPainter extends CustomPainter {
       ],
       stops: const [0.0, 0.4, 0.75, 1.0],
     );
-    canvas.drawRect(Offset.zero & size, Paint()..shader = skyGradient.createShader(Offset.zero & size));
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()..shader = skyGradient.createShader(Offset.zero & size),
+    );
 
     // Distant Forest Canopy Hills
     final hill1 = Path()
       ..moveTo(0, size.height * 0.15)
-      ..quadraticBezierTo(size.width * 0.4, size.height * 0.08, size.width * 0.8, size.height * 0.17)
-      ..quadraticBezierTo(size.width * 0.95, size.height * 0.2, size.width, size.height * 0.14)
+      ..quadraticBezierTo(
+        size.width * 0.4,
+        size.height * 0.08,
+        size.width * 0.8,
+        size.height * 0.17,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.95,
+        size.height * 0.2,
+        size.width,
+        size.height * 0.14,
+      )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
@@ -91,8 +96,18 @@ class MapBackgroundPainter extends CustomPainter {
 
     final hill2 = Path()
       ..moveTo(0, size.height * 0.42)
-      ..quadraticBezierTo(size.width * 0.3, size.height * 0.34, size.width * 0.7, size.height * 0.45)
-      ..quadraticBezierTo(size.width * 0.9, size.height * 0.48, size.width, size.height * 0.38)
+      ..quadraticBezierTo(
+        size.width * 0.3,
+        size.height * 0.34,
+        size.width * 0.7,
+        size.height * 0.45,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.9,
+        size.height * 0.48,
+        size.width,
+        size.height * 0.38,
+      )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
@@ -102,88 +117,66 @@ class MapBackgroundPainter extends CustomPainter {
     final treePaint = Paint()..color = const Color(0xFF047857);
     final darkTreePaint = Paint()..color = const Color(0xFF064E3B);
 
-    _drawPineTree(canvas, Offset(size.width * 0.1, size.height * 0.16), 36, darkTreePaint);
-    _drawPineTree(canvas, Offset(size.width * 0.85, size.height * 0.18), 42, darkTreePaint);
-    _drawPineTree(canvas, Offset(size.width * 0.22, size.height * 0.38), 46, treePaint);
-    _drawPineTree(canvas, Offset(size.width * 0.78, size.height * 0.42), 52, treePaint);
+    _drawPineTree(
+      canvas,
+      Offset(size.width * 0.1, size.height * 0.16),
+      36,
+      darkTreePaint,
+    );
+    _drawPineTree(
+      canvas,
+      Offset(size.width * 0.85, size.height * 0.18),
+      42,
+      darkTreePaint,
+    );
+    _drawPineTree(
+      canvas,
+      Offset(size.width * 0.22, size.height * 0.38),
+      46,
+      treePaint,
+    );
+    _drawPineTree(
+      canvas,
+      Offset(size.width * 0.78, size.height * 0.42),
+      52,
+      treePaint,
+    );
 
     // Glowing Ancient Runestones (World 2 Elements)
-    _drawGlowingRunestone(canvas, Offset(size.width * 0.82, size.height * 0.28));
-    _drawGlowingRunestone(canvas, Offset(size.width * 0.15, size.height * 0.65));
+    _drawGlowingRunestone(
+      canvas,
+      Offset(size.width * 0.82, size.height * 0.28),
+    );
+    _drawGlowingRunestone(
+      canvas,
+      Offset(size.width * 0.15, size.height * 0.65),
+    );
 
     // Giant Magic Mushrooms
-    _drawMagicMushroom(canvas, Offset(size.width * 0.12, size.height * 0.48), const Color(0xFFF43F5E));
-    _drawMagicMushroom(canvas, Offset(size.width * 0.88, size.height * 0.58), const Color(0xFF3B82F6));
-  }
-
-  // --- WORLD 3: PUZZLE PEAK (High-Altitude Snowy Mountains & Mist) ---
-  void _paintPuzzlePeakWorld(Canvas canvas, Size size) {
-    final skyGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: const [Color(0xFF0369A1), Color(0xFF38BDF8), Color(0xFFE0F2FE)],
+    _drawMagicMushroom(
+      canvas,
+      Offset(size.width * 0.12, size.height * 0.48),
+      const Color(0xFFF43F5E),
     );
-    canvas.drawRect(Offset.zero & size, Paint()..shader = skyGradient.createShader(Offset.zero & size));
-
-    // Snow Peaks
-    final mountain = Path()
-      ..moveTo(0, size.height * 0.35)
-      ..lineTo(size.width * 0.3, size.height * 0.12)
-      ..lineTo(size.width * 0.6, size.height * 0.28)
-      ..lineTo(size.width * 0.85, size.height * 0.08)
-      ..lineTo(size.width, size.height * 0.22)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(mountain, Paint()..color = const Color(0xFF0284C7));
-
-    // Snow Caps
-    final snowCap = Path()
-      ..moveTo(size.width * 0.22, size.height * 0.18)
-      ..lineTo(size.width * 0.3, size.height * 0.12)
-      ..lineTo(size.width * 0.38, size.height * 0.18)
-      ..close();
-    canvas.drawPath(snowCap, Paint()..color = Colors.white);
-  }
-
-  // --- WORLD 4: ALGEBRA VALLEY (Mysterious Crystal Valley) ---
-  void _paintAlgebraValleyWorld(Canvas canvas, Size size) {
-    final skyGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: const [Color(0xFF4C1D95), Color(0xFF7E22CE), Color(0xFFF472B6)],
+    _drawMagicMushroom(
+      canvas,
+      Offset(size.width * 0.88, size.height * 0.58),
+      const Color(0xFF3B82F6),
     );
-    canvas.drawRect(Offset.zero & size, Paint()..shader = skyGradient.createShader(Offset.zero & size));
-
-    // Floating Crystals
-    _drawFloatingCrystal(canvas, Offset(size.width * 0.2, size.height * 0.25), const Color(0xFFC084FC));
-    _drawFloatingCrystal(canvas, Offset(size.width * 0.8, size.height * 0.45), const Color(0xFFF472B6));
-  }
-
-  // --- WORLD 5: GEOMETRY ISLES ---
-  void _paintGeometryIslesWorld(Canvas canvas, Size size) {
-    final seaGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: const [Color(0xFF0284C7), Color(0xFF06B6D4), Color(0xFF0EA5E9)],
-    );
-    canvas.drawRect(Offset.zero & size, Paint()..shader = seaGradient.createShader(Offset.zero & size));
-  }
-
-  // --- WORLD 6: MASTER CITADEL ---
-  void _paintMasterCitadelWorld(Canvas canvas, Size size) {
-    final citadelGradient = LinearGradient(
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-      colors: const [Color(0xFF78350F), Color(0xFFD97706), Color(0xFFFACC15)],
-    );
-    canvas.drawRect(Offset.zero & size, Paint()..shader = citadelGradient.createShader(Offset.zero & size));
   }
 
   // --- HELPER DRAWING METHODS FOR FANTASY WORLDS ---
-  void _drawPineTree(Canvas canvas, Offset pos, double treeHeight, Paint paint) {
+  void _drawPineTree(
+    Canvas canvas,
+    Offset pos,
+    double treeHeight,
+    Paint paint,
+  ) {
     final trunkPaint = Paint()..color = const Color(0xFF451A03);
-    canvas.drawRect(Rect.fromLTWH(pos.dx - 3, pos.dy, 6, treeHeight * 0.4), trunkPaint);
+    canvas.drawRect(
+      Rect.fromLTWH(pos.dx - 3, pos.dy, 6, treeHeight * 0.4),
+      trunkPaint,
+    );
 
     final path = Path()
       ..moveTo(pos.dx - treeHeight * 0.35, pos.dy + 4)
@@ -196,10 +189,17 @@ class MapBackgroundPainter extends CustomPainter {
   void _drawGlowingRunestone(Canvas canvas, Offset pos) {
     final stonePaint = Paint()..color = const Color(0xFF334155);
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(pos.dx - 10, pos.dy - 20, 20, 36), const Radius.circular(5)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(pos.dx - 10, pos.dy - 20, 20, 36),
+        const Radius.circular(5),
+      ),
       stonePaint,
     );
-    canvas.drawCircle(Offset(pos.dx, pos.dy - 6), 5, Paint()..color = const Color(0xFF2DD4BF));
+    canvas.drawCircle(
+      Offset(pos.dx, pos.dy - 6),
+      5,
+      Paint()..color = const Color(0xFF2DD4BF),
+    );
     canvas.drawCircle(
       Offset(pos.dx, pos.dy - 6),
       10,
@@ -212,25 +212,29 @@ class MapBackgroundPainter extends CustomPainter {
   void _drawMagicMushroom(Canvas canvas, Offset pos, Color capColor) {
     // Stem
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(pos.dx - 4, pos.dy - 2, 8, 14), const Radius.circular(3)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(pos.dx - 4, pos.dy - 2, 8, 14),
+        const Radius.circular(3),
+      ),
       Paint()..color = const Color(0xFFFEF3C7),
     );
     // Cap
-    final capRect = Rect.fromCircle(center: Offset(pos.dx, pos.dy - 4), radius: 12);
+    final capRect = Rect.fromCircle(
+      center: Offset(pos.dx, pos.dy - 4),
+      radius: 12,
+    );
     canvas.drawArc(capRect, math.pi, math.pi, true, Paint()..color = capColor);
     // Dots
-    canvas.drawCircle(Offset(pos.dx - 4, pos.dy - 8), 2, Paint()..color = Colors.white);
-    canvas.drawCircle(Offset(pos.dx + 4, pos.dy - 9), 2, Paint()..color = Colors.white);
-  }
-
-  void _drawFloatingCrystal(Canvas canvas, Offset pos, Color crystalColor) {
-    final crystal = Path()
-      ..moveTo(pos.dx, pos.dy - 20)
-      ..lineTo(pos.dx + 12, pos.dy)
-      ..lineTo(pos.dx, pos.dy + 20)
-      ..lineTo(pos.dx - 12, pos.dy)
-      ..close();
-    canvas.drawPath(crystal, Paint()..color = crystalColor);
+    canvas.drawCircle(
+      Offset(pos.dx - 4, pos.dy - 8),
+      2,
+      Paint()..color = Colors.white,
+    );
+    canvas.drawCircle(
+      Offset(pos.dx + 4, pos.dy - 9),
+      2,
+      Paint()..color = Colors.white,
+    );
   }
 
   // --- BASE HAND-PAINTED FANTASY MEADOW (WORLD 1) ---
@@ -257,11 +261,7 @@ class MapBackgroundPainter extends CustomPainter {
       50,
       Paint()..color = const Color(0xFFFDE047).withValues(alpha: 0.35),
     );
-    canvas.drawCircle(
-      sunCenter,
-      32,
-      Paint()..color = const Color(0xFFFACC15),
-    );
+    canvas.drawCircle(sunCenter, 32, Paint()..color = const Color(0xFFFACC15));
 
     final distMountains = Path()
       ..moveTo(0, size.height * 0.12)
@@ -273,43 +273,61 @@ class MapBackgroundPainter extends CustomPainter {
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
-    canvas.drawPath(
-      distMountains,
-      Paint()..color = const Color(0xFF93C5FD),
-    );
+    canvas.drawPath(distMountains, Paint()..color = const Color(0xFF93C5FD));
 
     final hillLayer1 = Path()
       ..moveTo(0, size.height * 0.18)
-      ..quadraticBezierTo(size.width * 0.3, size.height * 0.12, size.width * 0.6, size.height * 0.19)
-      ..quadraticBezierTo(size.width * 0.85, size.height * 0.24, size.width, size.height * 0.17)
+      ..quadraticBezierTo(
+        size.width * 0.3,
+        size.height * 0.12,
+        size.width * 0.6,
+        size.height * 0.19,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.85,
+        size.height * 0.24,
+        size.width,
+        size.height * 0.17,
+      )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
-    canvas.drawPath(
-      hillLayer1,
-      Paint()..color = const Color(0xFF86EFAC),
-    );
+    canvas.drawPath(hillLayer1, Paint()..color = const Color(0xFF86EFAC));
 
     final hillLayer2 = Path()
       ..moveTo(0, size.height * 0.42)
-      ..quadraticBezierTo(size.width * 0.35, size.height * 0.34, size.width * 0.75, size.height * 0.44)
-      ..quadraticBezierTo(size.width * 0.9, size.height * 0.48, size.width, size.height * 0.39)
+      ..quadraticBezierTo(
+        size.width * 0.35,
+        size.height * 0.34,
+        size.width * 0.75,
+        size.height * 0.44,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.9,
+        size.height * 0.48,
+        size.width,
+        size.height * 0.39,
+      )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
-    canvas.drawPath(
-      hillLayer2,
-      Paint()..color = const Color(0xFF4ADE80),
-    );
+    canvas.drawPath(hillLayer2, Paint()..color = const Color(0xFF4ADE80));
   }
 
   // --- DYNAMIC DEVELOPMENT STRUCTURE DRAWING HELPERS ---
   void _drawTimberHut(Canvas canvas, Offset pos) {
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(pos.dx - 18, pos.dy - 12, 36, 24), const Radius.circular(6)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(pos.dx - 18, pos.dy - 12, 36, 24),
+        const Radius.circular(6),
+      ),
       Paint()..color = const Color(0xFF78350F),
     );
-    canvas.drawCircle(Offset(pos.dx - 6, pos.dy - 2), 5, Paint()..color = const Color(0xFFFDE047));
+    canvas.drawCircle(
+      Offset(pos.dx - 6, pos.dy - 2),
+      5,
+      Paint()..color = const Color(0xFFFDE047),
+    );
     final roof = Path()
       ..moveTo(pos.dx - 22, pos.dy - 12)
       ..lineTo(pos.dx, pos.dy - 28)
@@ -342,7 +360,10 @@ class MapBackgroundPainter extends CustomPainter {
 
   void _drawVillageCottages(Canvas canvas, Offset pos) {
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(pos.dx - 20, pos.dy, 40, 26), const Radius.circular(4)),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(pos.dx - 20, pos.dy, 40, 26),
+        const Radius.circular(4),
+      ),
       Paint()..color = const Color(0xFFFFFBEB),
     );
   }
@@ -355,19 +376,34 @@ class MapBackgroundPainter extends CustomPainter {
   }
 
   void _drawRoyalCastle(Canvas canvas, Offset pos) {
-    canvas.drawRect(Rect.fromLTWH(pos.dx - 24, pos.dy - 16, 48, 32), Paint()..color = const Color(0xFF475569));
+    canvas.drawRect(
+      Rect.fromLTWH(pos.dx - 24, pos.dy - 16, 48, 32),
+      Paint()..color = const Color(0xFF475569),
+    );
   }
 
   void _drawVictoryArchway(Canvas canvas, Offset pos) {
-    canvas.drawRect(Rect.fromLTWH(pos.dx - 24, pos.dy - 30, 8, 30), Paint()..color = const Color(0xFFFEF08A));
+    canvas.drawRect(
+      Rect.fromLTWH(pos.dx - 24, pos.dy - 30, 8, 30),
+      Paint()..color = const Color(0xFFFEF08A),
+    );
   }
 
   void _drawCelebrationBanners(Canvas canvas, Size size) {
-    final colors = [const Color(0xFFEF4444), const Color(0xFFFACC15), const Color(0xFF3B82F6), const Color(0xFF22C55E)];
+    final colors = [
+      const Color(0xFFEF4444),
+      const Color(0xFFFACC15),
+      const Color(0xFF3B82F6),
+      const Color(0xFF22C55E),
+    ];
     for (int i = 0; i < 8; i++) {
       final x = (i * 0.12 + 0.08) * size.width;
       final y = size.height * 0.06;
-      canvas.drawCircle(Offset(x, y), 5, Paint()..color = colors[i % colors.length]);
+      canvas.drawCircle(
+        Offset(x, y),
+        5,
+        Paint()..color = colors[i % colors.length],
+      );
     }
   }
 

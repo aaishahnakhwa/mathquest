@@ -27,22 +27,6 @@ class MonsterModel {
           primaryColor: Color(0xFF15803D),
           secondaryColor: Color(0xFF86EFAC),
         );
-      case 'world_3':
-        return const MonsterModel(
-          id: 'm_golem',
-          name: 'Stone Golem',
-          emoji: '🪨',
-          primaryColor: Color(0xFF475569),
-          secondaryColor: Color(0xFFCBD5E1),
-        );
-      case 'world_4':
-        return const MonsterModel(
-          id: 'm_drake',
-          name: 'Flame Drake',
-          emoji: '🐲',
-          primaryColor: Color(0xFFDC2626),
-          secondaryColor: Color(0xFFFCA5A5),
-        );
       case 'world_1':
       default:
         return const MonsterModel(

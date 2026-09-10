@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/game_provider.dart';
 import '../theme/colors.dart';
 import '../widgets/game_button.dart';
@@ -63,8 +64,7 @@ class HomeScreen extends StatelessWidget {
 
               // Professor Owl Math Guide Companion Speech
               const MathGuideWidget(
-                text:
-                    'Mastering math opens doors to exciting worlds! Tap Continue Adventure to dive into your next quest.',
+                text: 'Mastering math opens doors to exciting worlds! Tap Continue Adventure to dive into your next quest.',
               ),
               const SizedBox(height: 20),
 
@@ -73,12 +73,12 @@ class HomeScreen extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: const Color(0xFFF59E0B), width: 3.5),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B),
+                    width: 3.5,
+                  ),
                   boxShadow: const [
-                    BoxShadow(
-                      color: Color(0xFFD97706),
-                      offset: Offset(0, 6),
-                    ),
+                    BoxShadow(color: Color(0xFFD97706), offset: Offset(0, 6)),
                     BoxShadow(
                       color: Colors.black26,
                       blurRadius: 16,
@@ -128,15 +128,25 @@ class HomeScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+                                    color: const Color(0xFF0F172A)
+                                        .withValues(alpha: 0.8),
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: const Color(0xFFF59E0B), width: 1.5),
+                                    border: Border.all(
+                                      color: const Color(0xFFF59E0B),
+                                      width: 1.5,
+                                    ),
                                   ),
                                   child: Row(
                                     children: [
-                                      Text(currentWorld.iconEmoji, style: const TextStyle(fontSize: 16)),
+                                      Text(
+                                        currentWorld.iconEmoji,
+                                        style: const TextStyle(fontSize: 16),
+                                      ),
                                       const SizedBox(width: 6),
                                       Text(
                                         'WORLD ${currentWorld.worldNumber}: ${currentWorld.name.toUpperCase()}',
@@ -160,7 +170,10 @@ class HomeScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.black.withValues(alpha: 0.6),
                                     borderRadius: BorderRadius.circular(8),
@@ -180,7 +193,10 @@ class HomeScreen extends StatelessWidget {
                                 // Primary Hero CTA: CONTINUE ADVENTURE
                                 GameButton(
                                   text: 'CONTINUE ADVENTURE',
-                                  icon: const Text('🚀', style: TextStyle(fontSize: 20)),
+                                  icon: const Text(
+                                    '🚀',
+                                    style: TextStyle(fontSize: 20),
+                                  ),
                                   backgroundColor: GameColors.freshGreen,
                                   shadowColor: GameColors.freshGreenDark,
                                   textColor: Colors.white,
@@ -191,7 +207,8 @@ class HomeScreen extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const GameplayScreen(),
+                                        builder: (context) =>
+                                            const GameplayScreen(),
                                       ),
                                     );
                                   },
@@ -226,7 +243,7 @@ class HomeScreen extends StatelessWidget {
                   border: Border.all(color: GameColors.sunnyYellow, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: GameColors.navyText.withOpacity(0.06),
+                      color: GameColors.navyText.withValues(alpha: 0.06),
                       blurRadius: 6,
                     ),
                   ],
@@ -236,7 +253,7 @@ class HomeScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: GameColors.sunnyYellow.withOpacity(0.3),
+                        color: GameColors.sunnyYellow.withValues(alpha: 0.3),
                         shape: BoxShape.circle,
                       ),
                       child: const Text('⚡', style: TextStyle(fontSize: 28)),
@@ -270,7 +287,9 @@ class HomeScreen extends StatelessWidget {
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: GameColors.freshGreen,
                         borderRadius: BorderRadius.circular(14),
@@ -330,12 +349,9 @@ class HomeScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3), width: 2),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
         boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.08),
-            blurRadius: 6,
-          ),
+          BoxShadow(color: color.withValues(alpha: 0.08), blurRadius: 6),
         ],
       ),
       child: Row(

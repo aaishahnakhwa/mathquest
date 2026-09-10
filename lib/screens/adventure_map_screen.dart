@@ -1,14 +1,19 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/game_provider.dart';
 import '../models/world_model.dart';
 import '../models/level_model.dart';
 import '../theme/colors.dart';
+import '../widgets/ambient_butterfly.dart';
+import '../widgets/ambient_leaf_field.dart';
 import '../widgets/map_background_painter.dart';
 import '../widgets/village_buildings_overlay.dart';
 import '../widgets/level_node_widget.dart';
 import '../widgets/game_button.dart';
+import '../widgets/world_three_lumina_field.dart';
 import 'gameplay_screen.dart';
 import 'foundation_builder_screen.dart';
 
@@ -53,13 +58,17 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
     return Consumer<GameProvider>(
       builder: (context, provider, child) {
         final player = provider.player;
-        final worlds = provider.worlds;
-        final activeWorlds = worlds
-            .where((w) => w.id == 'world_1' || w.id == 'world_2')
-            .toList();
+        final activeWorlds = provider.worlds;
 
         final double screenWidth = MediaQuery.of(context).size.width;
-        final double world2Height = screenWidth * (1024.0 / 576.0);
+        final orderedWorlds = activeWorlds.reversed.toList();
+        final seamOffsets = <double>[];
+        var accumulatedHeight = 0.0;
+        for (var index = 0; index < orderedWorlds.length - 1; index++) {
+          accumulatedHeight +=
+              screenWidth * _mapAspectForWorld(orderedWorlds[index].id);
+          seamOffsets.add(accumulatedHeight);
+        }
         final double cloudHeight = screenWidth * (341.0 / 1024.0);
 
         return Stack(
@@ -72,7 +81,10 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                 children: [
                   // Map Header Title
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -101,15 +113,21 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 7),
+                            horizontal: 14,
+                            vertical: 7,
+                          ),
                           decoration: BoxDecoration(
                             gradient: GameColors.jellyYellowGradient,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                                color: GameColors.jellyYellowDark, width: 2.5),
+                              color: GameColors.jellyYellowDark,
+                              width: 2.5,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: GameColors.jellyYellowDark.withValues(alpha: 0.4),
+                                color: GameColors.jellyYellowDark.withValues(
+                                  alpha: 0.4,
+                                ),
                                 blurRadius: 6,
                                 offset: const Offset(0, 4),
                               ),
@@ -142,7 +160,8 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                   ),
                   const SizedBox(height: 10),
 
-                  // Render World 2 on top, World 1 at bottom seamlessly with Animated Cloud Transition & Side Accents!
+                  // Render the highest world first and mask every map seam with
+                  // the existing animated cloud transition asset.
                   AnimatedBuilder(
                     animation: _cloudAnimationController,
                     builder: (context, child) {
@@ -154,35 +173,28 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                         clipBehavior: Clip.none,
                         children: [
                           Column(
-                            children: activeWorlds.reversed
-                                .map((world) => _buildWorldSection(context, provider, world))
+                            children: orderedWorlds
+                                .map(
+                                  (world) => _buildWorldSection(
+                                    context,
+                                    provider,
+                                    world,
+                                  ),
+                                )
                                 .toList(),
                           ),
 
-                          // 1. Animated Left Edge Cloud Replica
-                          Positioned(
-                            top: world2Height - (cloudHeight * 0.95) + (floatY * 0.7),
-                            left: -screenWidth * 0.15 - (floatX * 0.6),
-                            width: screenWidth * 0.75,
-                            height: cloudHeight * 1.1,
-                            child: IgnorePointer(
-                              child: Image.asset(
-                                'assets/images/map_cloud_transition.png',
-                                fit: BoxFit.fill,
-                                filterQuality: FilterQuality.high,
-                              ),
-                            ),
-                          ),
-
-                          // 2. Animated Right Edge Cloud Replica (Mirrored)
-                          Positioned(
-                            top: world2Height - (cloudHeight * 0.85) - (floatY * 0.7),
-                            right: -screenWidth * 0.15 + (floatX * 0.6),
-                            width: screenWidth * 0.75,
-                            height: cloudHeight * 1.1,
-                            child: IgnorePointer(
-                              child: Transform.scale(
-                                scaleX: -1,
+                          for (final seamTop in seamOffsets) ...[
+                            // 1. Animated Left Edge Cloud Replica
+                            Positioned(
+                              top:
+                                  seamTop -
+                                  (cloudHeight * 0.95) +
+                                  (floatY * 0.7),
+                              left: -screenWidth * 0.15 - (floatX * 0.6),
+                              width: screenWidth * 0.75,
+                              height: cloudHeight * 1.1,
+                              child: IgnorePointer(
                                 child: Image.asset(
                                   'assets/images/map_cloud_transition.png',
                                   fit: BoxFit.fill,
@@ -190,24 +202,45 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                                 ),
                               ),
                             ),
-                          ),
 
-                          // 3. Animated Main Center Cloud Transition
-                          Positioned(
-                            top: world2Height - (cloudHeight * 0.70) + floatY,
-                            left: floatX,
-                            right: -floatX,
-                            height: cloudHeight,
-                            child: IgnorePointer(
-                              child: Image.asset(
-                                'assets/images/map_cloud_transition.png',
-                                width: screenWidth,
-                                height: cloudHeight,
-                                fit: BoxFit.fill,
-                                filterQuality: FilterQuality.high,
+                            // 2. Animated Right Edge Cloud Replica (Mirrored)
+                            Positioned(
+                              top:
+                                  seamTop -
+                                  (cloudHeight * 0.85) -
+                                  (floatY * 0.7),
+                              right: -screenWidth * 0.15 + (floatX * 0.6),
+                              width: screenWidth * 0.75,
+                              height: cloudHeight * 1.1,
+                              child: IgnorePointer(
+                                child: Transform.scale(
+                                  scaleX: -1,
+                                  child: Image.asset(
+                                    'assets/images/map_cloud_transition.png',
+                                    fit: BoxFit.fill,
+                                    filterQuality: FilterQuality.high,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+
+                            // 3. Animated Main Center Cloud Transition
+                            Positioned(
+                              top: seamTop - (cloudHeight * 0.70) + floatY,
+                              left: floatX,
+                              right: -floatX,
+                              height: cloudHeight,
+                              child: IgnorePointer(
+                                child: Image.asset(
+                                  'assets/images/map_cloud_transition.png',
+                                  width: screenWidth,
+                                  height: cloudHeight,
+                                  fit: BoxFit.fill,
+                                  filterQuality: FilterQuality.high,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       );
                     },
@@ -254,6 +287,12 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
     );
   }
 
+  double _mapAspectForWorld(String worldId) {
+    if (worldId == 'world_3') return 1676.0 / 941.0;
+    if (worldId == 'world_2') return 1024.0 / 576.0;
+    return 1024.0 / 681.0;
+  }
+
   Widget _buildWorldSection(
     BuildContext context,
     GameProvider provider,
@@ -266,27 +305,70 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
     final String? bgAssetPath = world.id == 'world_1'
         ? 'assets/images/world_map_bg.jpg'
         : world.id == 'world_2'
-            ? 'assets/images/world_2_map_bg.jpg'
-            : null;
+        ? 'assets/images/world_2_map_bg.jpg'
+        : world.id == 'world_3'
+        ? 'assets/images/world_3_map_bg.png'
+        : null;
 
-    final double mapAspect = world.id == 'world_2' ? (1024.0 / 576.0) : (1024.0 / 681.0);
+    final double mapAspect = _mapAspectForWorld(world.id);
     final double totalHeight = containerWidth * mapAspect;
 
     // PRECISE NODE POSITIONS SYNCED 1:1 WITH THE BACKGROUND ARTWORK BADGES!
-    final List<Offset> nodePositions = world.id == 'world_2'
+    final List<Offset> nodePositions = world.id == 'world_3'
         ? [
-            Offset(containerWidth * 0.5022, totalHeight * 0.8104), // Level 6 (Pedestal 1)
-            Offset(containerWidth * 0.4956, totalHeight * 0.6264), // Level 7 (Pedestal 2)
-            Offset(containerWidth * 0.5391, totalHeight * 0.4514), // Level 8 (Pedestal 3)
-            Offset(containerWidth * 0.5112, totalHeight * 0.2747), // Level 9 (Pedestal 4)
-            Offset(containerWidth * 0.5215, totalHeight * 0.1387), // Level 10 (Pedestal 5)
+            Offset(
+              containerWidth * 0.4612,
+              totalHeight * 0.7601,
+            ), // Level 11 (lowest pedestal)
+            Offset(
+              containerWidth * 0.5058,
+              totalHeight * 0.5704,
+            ), // Level 12 (second-lowest pedestal)
+          ]
+        : world.id == 'world_2'
+        ? [
+            Offset(
+              containerWidth * 0.5022,
+              totalHeight * 0.8104,
+            ), // Level 6 (Pedestal 1)
+            Offset(
+              containerWidth * 0.4956,
+              totalHeight * 0.6264,
+            ), // Level 7 (Pedestal 2)
+            Offset(
+              containerWidth * 0.5391,
+              totalHeight * 0.4514,
+            ), // Level 8 (Pedestal 3)
+            Offset(
+              containerWidth * 0.5112,
+              totalHeight * 0.2747,
+            ), // Level 9 (Pedestal 4)
+            Offset(
+              containerWidth * 0.5215,
+              totalHeight * 0.1387,
+            ), // Level 10 (Pedestal 5)
           ]
         : [
-            Offset(containerWidth * 0.5628, totalHeight * 0.8798), // Level 1 (Circle 1)
-            Offset(containerWidth * 0.4436, totalHeight * 0.7183), // Level 2 (Circle 2)
-            Offset(containerWidth * 0.5754, totalHeight * 0.5171), // Level 3 (Circle 3)
-            Offset(containerWidth * 0.4186, totalHeight * 0.3421), // Level 4 (Circle 4)
-            Offset(containerWidth * 0.4362, totalHeight * 0.1240), // Level 5 (Circle 5)
+            Offset(
+              containerWidth * 0.5628,
+              totalHeight * 0.8798,
+            ), // Level 1 (Circle 1)
+            Offset(
+              containerWidth * 0.4436,
+              totalHeight * 0.7183,
+            ), // Level 2 (Circle 2)
+            Offset(
+              containerWidth * 0.5754,
+              totalHeight * 0.5171,
+            ), // Level 3 (Circle 3)
+            Offset(
+              containerWidth * 0.4186,
+              totalHeight * 0.3421,
+            ), // Level 4 (Circle 4)
+            Offset(
+              containerWidth * 0.4362,
+              totalHeight * 0.1240,
+            ), // Level 5 (Circle 5)
           ];
 
     return SizedBox(
@@ -307,7 +389,9 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                         painter: MapBackgroundPainter(
                           worldId: world.id,
                           completedLevelsCount: world.levels
-                              .where((l) => player.completedLevelIds.contains(l.id))
+                              .where(
+                                (l) => player.completedLevelIds.contains(l.id),
+                              )
                               .length,
                         ),
                       );
@@ -324,14 +408,66 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                   ),
           ),
 
+          // Ambient wildlife stays above the artwork and below every map control.
+          if (world.id == 'world_3')
+            Positioned.fill(
+              child: WorldThreeLuminaField(
+                animation: _cloudAnimationController,
+                mapWidth: containerWidth,
+                mapHeight: totalHeight,
+              ),
+            ),
+          if (world.id == 'world_1')
+            Positioned.fill(
+              child: AmbientLeafField(
+                animation: _cloudAnimationController,
+                mapWidth: containerWidth,
+                mapHeight: totalHeight,
+              ),
+            ),
+          if (world.id == 'world_1')
+            Positioned.fill(
+              child: AmbientButterfly(
+                id: 'meadow-orange',
+                animation: _cloudAnimationController,
+                mapWidth: containerWidth,
+                mapHeight: totalHeight,
+              ),
+            ),
+          if (world.id == 'world_1')
+            Positioned.fill(
+              child: AmbientButterfly(
+                id: 'waterside-yellow',
+                animation: _cloudAnimationController,
+                mapWidth: containerWidth,
+                mapHeight: totalHeight,
+                frames: AmbientButterfly.yellowFrameAssets,
+                flightArea: ButterflyFlightArea.upperLeftWaterside,
+                wingPhaseOffset: 0.37,
+                sizeFactor: 0.062,
+                initialRouteVariant: 1,
+              ),
+            ),
+          if (world.id == 'world_1')
+            Positioned.fill(
+              child: AmbientButterfly(
+                id: 'grove-blue',
+                animation: _cloudAnimationController,
+                mapWidth: containerWidth,
+                mapHeight: totalHeight,
+                frames: AmbientButterfly.blueFrameAssets,
+                flightArea: ButterflyFlightArea.lowerLeftGrove,
+                wingPhaseOffset: 0.68,
+                sizeFactor: 0.058,
+                initialRouteVariant: 2,
+              ),
+            ),
+
           // 2. DYNAMIC VILLAGE BUILDINGS OVERLAY (ONLY FOR WORLD 1)
           if (world.id == 'world_1')
             Positioned.fill(
               child: VillageBuildingsOverlay(
                 worldId: world.id,
-                completedCount: world.levels
-                    .where((l) => player.completedLevelIds.contains(l.id))
-                    .length,
                 width: containerWidth,
                 height: totalHeight,
               ),
@@ -342,19 +478,19 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
             final level = world.levels[index];
             final pos = nodePositions[index];
 
-            final isCompleted =
-                player.completedLevelIds.contains(level.id);
+            final isCompleted = player.completedLevelIds.contains(level.id);
             final isUnlocked = provider.isLevelUnlocked(level);
             final earnedStars = player.levelStars[level.id] ?? 0;
 
-            final isCurrent = isUnlocked &&
+            final isCurrent =
+                isUnlocked &&
                 !isCompleted &&
                 (index == 0 ||
                     player.completedLevelIds.contains(
-                        world.levels[index - 1].id));
+                      world.levels[index - 1].id,
+                    ));
 
-            final isHouseBuilt = (player.buildingStages['hut_${level.id}'] ??
-                    player.buildingStages['hut_level_${level.levelNumber}'] ?? 0) > 0;
+            final isHouseBuilt = provider.isLevelHouseComplete(level);
 
             return Positioned(
               left: pos.dx - 29,
@@ -374,7 +510,8 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                   isUnlocked,
                   earnedStars,
                 ),
-                onBuildTap: (isCompleted && !isHouseBuilt)
+                onBuildTap:
+                    (world.id == 'world_1' && isCompleted && !isHouseBuilt)
                     ? () {
                         Navigator.push(
                           context,
@@ -393,9 +530,7 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
           if (!isWorldUnlocked)
             Positioned.fill(
               child: IgnorePointer(
-                child: Container(
-                  color: Colors.black.withValues(alpha: 0.45),
-                ),
+                child: Container(color: Colors.black.withValues(alpha: 0.45)),
               ),
             ),
         ],
@@ -493,7 +628,9 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: GameColors.skyBlueLight,
                       borderRadius: BorderRadius.circular(12),
@@ -511,7 +648,9 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: GameColors.freshGreenLight,
                       borderRadius: BorderRadius.circular(12),
@@ -546,15 +685,21 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                 }),
               ),
               const SizedBox(height: 20),
-              if (provider.player.completedLevelIds.contains(level.id)) ...[
+              if (level.worldId == 'world_1' &&
+                  provider.player.completedLevelIds.contains(level.id)) ...[
                 Builder(
                   builder: (context) {
-                    final isHouseBuilt = (provider.player.buildingStages['hut_${level.id}'] ??
-                            provider.player.buildingStages['hut_level_${level.levelNumber}'] ?? 0) > 0;
+                    final houseStage = provider.levelHouseStage(level);
+                    final isHouseBuilt = provider.isLevelHouseComplete(level);
                     if (!isHouseBuilt) {
                       return GameButton(
-                        text: 'BUILD HOUSE STAGE 🛠️',
-                        icon: Image.asset('assets/images/wood_log.png', height: 20),
+                        text: houseStage == 0
+                            ? 'BUILD HOUSE 🛠️'
+                            : 'CONTINUE BUILD $houseStage/${GameProvider.levelHouseFinalStage}',
+                        icon: Image.asset(
+                          'assets/images/wood_log.png',
+                          height: 20,
+                        ),
                         backgroundColor: GameColors.skyBlue,
                         shadowColor: GameColors.skyBlueDark,
                         textColor: Colors.white,
@@ -572,12 +717,16 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                     } else {
                       return Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: GameColors.freshGreen.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                              color: GameColors.freshGreen, width: 2),
+                            color: GameColors.freshGreen,
+                            width: 2,
+                          ),
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,

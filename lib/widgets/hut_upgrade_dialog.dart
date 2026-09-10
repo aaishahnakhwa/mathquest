@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../models/building_model.dart';
 import '../providers/game_provider.dart';
 import '../theme/colors.dart';
@@ -7,10 +8,7 @@ import '../theme/colors.dart';
 class HutUpgradeDialog extends StatelessWidget {
   final BuildingModel building;
 
-  const HutUpgradeDialog({
-    super.key,
-    required this.building,
-  });
+  const HutUpgradeDialog({super.key, required this.building});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +29,9 @@ class HutUpgradeDialog extends StatelessWidget {
         final canAfford = hasEnoughCoins && hasEnoughWood;
 
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           elevation: 10,
           backgroundColor: Colors.transparent,
           child: Container(
@@ -42,7 +42,7 @@ class HutUpgradeDialog extends StatelessWidget {
               border: Border.all(color: GameColors.cardBorder, width: 3),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),
@@ -57,10 +57,12 @@ class HutUpgradeDialog extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: GameColors.skyBlue.withOpacity(0.15),
+                        color: GameColors.skyBlue.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                            color: GameColors.skyBlue.withOpacity(0.4), width: 1.5),
+                          color: GameColors.skyBlue.withValues(alpha: 0.4),
+                          width: 1.5,
+                        ),
                       ),
                       child: Text(
                         currentBuilding.iconEmoji,
@@ -84,7 +86,9 @@ class HutUpgradeDialog extends StatelessWidget {
                           const SizedBox(height: 2),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 2),
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: isMax
                                   ? GameColors.freshGreen
@@ -106,8 +110,10 @@ class HutUpgradeDialog extends StatelessWidget {
                     ),
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close_rounded,
-                          color: GameColors.navyTextMuted),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: GameColors.navyTextMuted,
+                      ),
                     ),
                   ],
                 ),
@@ -126,13 +132,16 @@ class HutUpgradeDialog extends StatelessWidget {
                 // Perk Banner
                 Container(
                   width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: GameColors.sunnyYellow.withOpacity(0.2),
+                    color: GameColors.sunnyYellow.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color: GameColors.yellowDark.withOpacity(0.3)),
+                      color: GameColors.yellowDark.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -175,11 +184,13 @@ class HutUpgradeDialog extends StatelessWidget {
                       Expanded(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 8),
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: hasEnoughCoins
-                                ? GameColors.freshGreen.withOpacity(0.12)
-                                : Colors.red.withOpacity(0.12),
+                                ? GameColors.freshGreen.withValues(alpha: 0.12)
+                                : Colors.red.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: hasEnoughCoins
@@ -212,11 +223,13 @@ class HutUpgradeDialog extends StatelessWidget {
                       Expanded(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 8),
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: hasEnoughWood
-                                ? GameColors.freshGreen.withOpacity(0.12)
-                                : Colors.red.withOpacity(0.12),
+                                ? GameColors.freshGreen.withValues(alpha: 0.12)
+                                : Colors.red.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: hasEnoughWood
@@ -258,8 +271,9 @@ class HutUpgradeDialog extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: canAfford
                           ? () {
-                              final success =
-                                  provider.upgradeBuilding(currentBuilding.id);
+                              final success = provider.upgradeBuilding(
+                                currentBuilding.id,
+                              );
                               if (success) {
                                 Navigator.of(context).pop();
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -267,7 +281,8 @@ class HutUpgradeDialog extends StatelessWidget {
                                     content: Text(
                                       '🎉 Upgraded ${currentBuilding.name} to ${currentBuilding.nextStageTitle}!',
                                       style: const TextStyle(
-                                          fontFamily: 'Fredoka'),
+                                        fontFamily: 'Fredoka',
+                                      ),
                                     ),
                                     backgroundColor: GameColors.freshGreen,
                                   ),
@@ -301,7 +316,7 @@ class HutUpgradeDialog extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: GameColors.freshGreen.withOpacity(0.15),
+                      color: GameColors.freshGreen.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Row(

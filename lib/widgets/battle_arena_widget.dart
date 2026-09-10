@@ -134,7 +134,7 @@ class _BattleArenaWidgetState extends State<BattleArenaWidget>
               return Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Top HP Boxes & Mana Orbs (Left Player Hero HP & Right Monster HP)
+                  // Top HP Boxes (Left Player Hero HP & Right Monster HP)
                   Positioned(
                     top: 0,
                     left: 0,
@@ -205,19 +205,6 @@ class _BattleArenaWidgetState extends State<BattleArenaWidget>
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: List.generate(3, (index) {
-                                final active = index < widget.heartsLeft;
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 2.0),
-                                  child: Text(
-                                    active ? '🔵' : '⚪',
-                                    style: const TextStyle(fontSize: 10),
-                                  ),
-                                );
-                              }),
-                            ),
                           ],
                         ),
 
@@ -282,16 +269,6 @@ class _BattleArenaWidgetState extends State<BattleArenaWidget>
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: const [
-                                Text('🟣', style: TextStyle(fontSize: 10)),
-                                SizedBox(width: 1),
-                                Text('🟣', style: TextStyle(fontSize: 10)),
-                                SizedBox(width: 1),
-                                Text('🟣', style: TextStyle(fontSize: 10)),
-                              ],
                             ),
                           ],
                         ),

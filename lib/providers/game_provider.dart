@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/player_model.dart';
 import '../models/world_model.dart';
 import '../models/level_model.dart';
@@ -13,6 +14,8 @@ import '../data/shop_repository.dart';
 import '../data/village_repository.dart';
 
 class GameProvider extends ChangeNotifier {
+  static const int levelHouseFinalStage = 4;
+
   PlayerModel _player = const PlayerModel();
   List<WorldModel> _worlds = [];
   List<AchievementModel> _achievements = [];
@@ -62,9 +65,10 @@ class GameProvider extends ChangeNotifier {
   LevelModel? get activeLevel => _activeLevel;
   int get currentQuestionIndex => _currentQuestionIndex;
   QuestionModel? get currentQuestion =>
-      (_activeLevel != null && _currentQuestionIndex < _activeLevel!.questions.length)
-          ? _activeLevel!.questions[_currentQuestionIndex]
-          : null;
+      (_activeLevel != null &&
+          _currentQuestionIndex < _activeLevel!.questions.length)
+      ? _activeLevel!.questions[_currentQuestionIndex]
+      : null;
   int? get selectedAnswerIndex => _selectedAnswerIndex;
   bool get isAnswerSubmitted => _isAnswerSubmitted;
   bool get isCorrectAnswer => _isCorrectAnswer;
@@ -115,6 +119,46 @@ class GameProvider extends ChangeNotifier {
     return true;
   }
 
+  int levelHouseStage(LevelModel level) {
+    final canonicalStage = _player.buildingStages['hut_${level.id}'] ?? 0;
+    if (level.worldId != 'world_1') {
+      return canonicalStage.clamp(0, levelHouseFinalStage);
+    }
+
+    final legacyStage =
+        _player.buildingStages['hut_level_${level.levelNumber}'] ?? 0;
+    final savedStage = canonicalStage > legacyStage
+        ? canonicalStage
+        : legacyStage;
+    return savedStage.clamp(0, levelHouseFinalStage);
+  }
+
+  bool isLevelHouseComplete(LevelModel level) =>
+      levelHouseStage(level) >= levelHouseFinalStage;
+
+  bool advanceLevelHouseConstruction(LevelModel level) {
+    if (level.worldId != 'world_1' ||
+        !_player.completedLevelIds.contains(level.id) ||
+        _player.woodLogs <= 0) {
+      return false;
+    }
+
+    final currentStage = levelHouseStage(level);
+    if (currentStage >= levelHouseFinalStage) return false;
+
+    final newBuildingStages = Map<String, int>.from(_player.buildingStages);
+    newBuildingStages['hut_${level.id}'] = currentStage + 1;
+
+    _player = _player.copyWith(
+      woodLogs: _player.woodLogs - 1,
+      buildingStages: newBuildingStages,
+    );
+
+    saveProgress();
+    notifyListeners();
+    return true;
+  }
+
   GameProvider() {
     _initGame();
   }
@@ -140,15 +184,41 @@ class GameProvider extends ChangeNotifier {
       _player = const PlayerModel();
     }
 
-    final hasCompletedW1 = _player.completedLevelIds.contains('w1_l5') || _player.totalStars >= 10;
+    // Keep saved progress only for worlds represented on the illustrated map.
+    final validLevelIds = _worlds
+        .expand((world) => world.levels)
+        .map((level) => level.id)
+        .toSet();
+    final cleanedCompletedLevels = _player.completedLevelIds.intersection(
+      validLevelIds,
+    );
+    final cleanedLevelStars = Map<String, int>.fromEntries(
+      _player.levelStars.entries.where(
+        (entry) => validLevelIds.contains(entry.key),
+      ),
+    );
+    final cleanedTotalStars = cleanedLevelStars.values.fold(
+      0,
+      (sum, stars) => sum + stars,
+    );
+    final hasCompletedW1 =
+        cleanedCompletedLevels.contains('w1_l5') || cleanedTotalStars >= 10;
     final Set<String> cleanedUnlockedWorlds = {'world_1'};
     if (hasCompletedW1) {
       cleanedUnlockedWorlds.add('world_2');
     }
-    _player = _player.copyWith(unlockedWorldIds: cleanedUnlockedWorlds);
+    if (cleanedTotalStars >= 25) {
+      cleanedUnlockedWorlds.add('world_3');
+    }
+    _player = _player.copyWith(
+      completedLevelIds: cleanedCompletedLevels,
+      levelStars: cleanedLevelStars,
+      unlockedWorldIds: cleanedUnlockedWorlds,
+    );
 
     _updateStreakOnLoad();
     _updateAchievementsProgress();
+    await saveProgress();
 
     _isLoading = false;
     notifyListeners();
@@ -200,8 +270,9 @@ class GameProvider extends ChangeNotifier {
   }
 
   void toggleAutoShowExplanations() {
-    _player =
-        _player.copyWith(autoShowExplanations: !_player.autoShowExplanations);
+    _player = _player.copyWith(
+      autoShowExplanations: !_player.autoShowExplanations,
+    );
     saveProgress();
     notifyListeners();
   }
@@ -211,7 +282,7 @@ class GameProvider extends ChangeNotifier {
     _currentTab = 1;
     _activeLevel = null;
     _isLevelCompleted = false;
-    
+
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('player_data');
@@ -269,16 +340,20 @@ class GameProvider extends ChangeNotifier {
   }
 
   void submitAnswer() {
-    if (_selectedAnswerIndex == null || _isAnswerSubmitted || currentQuestion == null) {
+    if (_selectedAnswerIndex == null ||
+        _isAnswerSubmitted ||
+        currentQuestion == null) {
       return;
     }
 
     _isAnswerSubmitted = true;
-    _isCorrectAnswer = (_selectedAnswerIndex == currentQuestion!.correctAnswerIndex);
+    _isCorrectAnswer =
+        (_selectedAnswerIndex == currentQuestion!.correctAnswerIndex);
 
     final updatedSolved = _player.questionsSolved + 1;
-    final updatedCorrect =
-        _isCorrectAnswer ? _player.correctAnswers + 1 : _player.correctAnswers;
+    final updatedCorrect = _isCorrectAnswer
+        ? _player.correctAnswers + 1
+        : _player.correctAnswers;
 
     if (_isCorrectAnswer) {
       _levelCorrectCount++;
@@ -393,8 +468,10 @@ class GameProvider extends ChangeNotifier {
     newCompletedLevels.add(_activeLevel!.id);
 
     final newUnlockedWorlds = Set<String>.from(_player.unlockedWorldIds);
-    final newTotalStars =
-        newLevelStars.values.fold(0, (sum, stars) => sum + stars);
+    final newTotalStars = newLevelStars.values.fold(
+      0,
+      (sum, stars) => sum + stars,
+    );
 
     if (newTotalStars >= 10 || newCompletedLevels.contains('w1_l5')) {
       newUnlockedWorlds.add('world_2');
@@ -402,10 +479,6 @@ class GameProvider extends ChangeNotifier {
     if (newTotalStars >= 25) {
       newUnlockedWorlds.add('world_3');
     }
-    if (newTotalStars >= 40) {
-      newUnlockedWorlds.add('world_4');
-    }
-
     int newCurrentXp = _player.currentXp + _earnedXp;
     int newLevel = _player.level;
     int newTotalXp = _player.totalXp + _earnedXp;
@@ -454,10 +527,15 @@ class GameProvider extends ChangeNotifier {
           currentProgress = (_earnedStars == 3 && _isLevelCompleted) ? 1 : 0;
           break;
         case 'ach_world_explorer':
-          currentProgress = _player.unlockedWorldIds.contains('world_2') ? 1 : 0;
+          currentProgress = _player.unlockedWorldIds.contains('world_2')
+              ? 1
+              : 0;
           break;
-        case 'ach_fraction_hero':
-          currentProgress = _player.correctAnswers.toDouble();
+        case 'ach_double_digit_hero':
+          currentProgress = _player.completedLevelIds
+              .where((levelId) => levelId.startsWith('w2_'))
+              .length
+              .toDouble();
           break;
         case 'ach_coin_collector':
           currentProgress = _player.coins.toDouble();

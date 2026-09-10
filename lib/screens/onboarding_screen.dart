@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/game_provider.dart';
 import '../theme/colors.dart';
 import '../widgets/game_button.dart';
@@ -67,7 +68,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       color: GameColors.skyBlueDark,
                       shadows: [
                         Shadow(
-                          color: GameColors.navyText.withOpacity(0.15),
+                          color: GameColors.navyText.withValues(alpha: 0.15),
                           offset: const Offset(0, 3),
                           blurRadius: 4,
                         ),
@@ -180,21 +181,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: const Color(0xFFF59E0B), width: 3),
                 boxShadow: const [
-                  BoxShadow(
-                    color: Color(0xFFD97706),
-                    offset: Offset(0, 4),
-                  ),
+                  BoxShadow(color: Color(0xFFD97706), offset: Offset(0, 4)),
                 ],
               ),
               child: Column(
                 children: [
-                  AvatarWidget(
-                    avatarId: _selectedAvatarId,
-                    size: 110,
-                  ),
+                  AvatarWidget(avatarId: _selectedAvatarId, size: 110),
                   const SizedBox(height: 10),
                   Text(
-                    _nameController.text.isEmpty ? 'Math Hero' : _nameController.text,
+                    _nameController.text.isEmpty
+                        ? 'Math Hero'
+                        : _nameController.text,
                     style: const TextStyle(
                       fontFamily: 'Fredoka',
                       fontSize: 18,
@@ -220,11 +217,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 filled: true,
                 fillColor: Colors.white,
                 hintText: 'Enter Hero Name',
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: const BorderSide(
-                      color: GameColors.skyBlue, width: 2),
+                    color: GameColors.skyBlue,
+                    width: 2,
+                  ),
                 ),
               ),
             ),
@@ -268,8 +270,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
-                      Text('💰 +150 Coins  ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      Text('💎 +15 Gems', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(
+                        '💰 +150 Coins  ',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        '💎 +15 Gems',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -309,7 +323,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: GameColors.skyBlue.withOpacity(0.3),
+                    color: GameColors.skyBlue.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -318,10 +332,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         child: Column(
           children: [
-            AvatarWidget(
-              avatarId: id,
-              size: 64,
-            ),
+            AvatarWidget(avatarId: id, size: 64),
             const SizedBox(height: 8),
             Text(
               label,
@@ -329,7 +340,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 fontFamily: 'Fredoka',
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? GameColors.skyBlueDark : GameColors.navyText,
+                color: isSelected
+                    ? GameColors.skyBlueDark
+                    : GameColors.navyText,
               ),
             ),
           ],

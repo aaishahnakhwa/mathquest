@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
+
 import '../theme/colors.dart';
 
 class RewardChestWidget extends StatefulWidget {
   final VoidCallback? onOpen;
   final bool isOpen;
 
-  const RewardChestWidget({
-    super.key,
-    this.onOpen,
-    this.isOpen = false,
-  });
+  const RewardChestWidget({super.key, this.onOpen, this.isOpen = false});
 
   @override
   State<RewardChestWidget> createState() => _RewardChestWidgetState();
@@ -53,11 +50,11 @@ class _RewardChestWidgetState extends State<RewardChestWidget>
               height: 130,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: GameColors.sunnyYellow.withOpacity(0.2),
+                color: GameColors.sunnyYellow.withValues(alpha: 0.2),
                 border: Border.all(color: GameColors.sunnyYellow, width: 3),
                 boxShadow: [
                   BoxShadow(
-                    color: GameColors.sunnyYellow.withOpacity(0.4),
+                    color: GameColors.sunnyYellow.withValues(alpha: 0.4),
                     blurRadius: 20,
                     spreadRadius: 4,
                   ),
