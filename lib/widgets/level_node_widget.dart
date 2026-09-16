@@ -5,6 +5,17 @@ import '../theme/colors.dart';
 import 'avatar_widget.dart';
 
 class LevelNodeWidget extends StatefulWidget {
+  static const lockedButtonAsset = 'assets/images/level_btn_locked.png';
+
+  static String buttonAssetForLevel({
+    required int levelNumber,
+    required bool isUnlocked,
+  }) {
+    return isUnlocked
+        ? 'assets/images/level_btn_$levelNumber.png'
+        : lockedButtonAsset;
+  }
+
   final LevelModel level;
   final bool isUnlocked;
   final bool isCompleted;
@@ -61,10 +72,6 @@ class _LevelNodeWidgetState extends State<LevelNodeWidget>
     final playerCharacterAsset = AvatarWidget.mapCharacterAssetFor(
       widget.playerAvatarId,
     );
-    final int buttonIndex = widget.level.levelNumber <= 11
-        ? widget.level.levelNumber
-        : (((widget.level.levelNumber - 1) % 10) + 1);
-
     return SizedBox(
       width: 120,
       height: 70,
@@ -176,14 +183,15 @@ class _LevelNodeWidgetState extends State<LevelNodeWidget>
                       },
                     ),
 
-                  // INDIVIDUAL EXTRACTED LEVEL BUTTON SPRITE (Unlocked 1..5 OR Custom Locked Asset)
+                  // Individual numbered sprite for every playable level.
                   SizedBox(
                     width: 58,
                     height: 50,
                     child: Image.asset(
-                      widget.isUnlocked
-                          ? 'assets/images/level_btn_$buttonIndex.png'
-                          : 'assets/images/level_btn_locked.png',
+                      LevelNodeWidget.buttonAssetForLevel(
+                        levelNumber: widget.level.levelNumber,
+                        isUnlocked: widget.isUnlocked,
+                      ),
                       fit: BoxFit.contain,
                       filterQuality: FilterQuality.high,
                     ),

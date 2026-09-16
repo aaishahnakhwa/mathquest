@@ -319,6 +319,36 @@ void main() {
     );
   });
 
+  test('every playable level uses its matching transparent button asset', () {
+    final levels = WorldRepository.getAllWorlds().expand(
+      (world) => world.levels,
+    );
+
+    for (final level in levels) {
+      final asset = LevelNodeWidget.buttonAssetForLevel(
+        levelNumber: level.levelNumber,
+        isUnlocked: true,
+      );
+      expect(asset, 'assets/images/level_btn_${level.levelNumber}.png');
+      final file = File(asset);
+      expect(file.existsSync(), isTrue, reason: 'Missing $asset');
+      final sprite = image.decodePng(file.readAsBytesSync());
+      expect(sprite, isNotNull, reason: 'Invalid PNG: $asset');
+      if (level.levelNumber >= 12) {
+        expect(
+          sprite!.getPixel(0, 0).a,
+          0,
+          reason: '$asset is not transparent',
+        );
+      }
+    }
+
+    expect(
+      LevelNodeWidget.buttonAssetForLevel(levelNumber: 15, isUnlocked: false),
+      LevelNodeWidget.lockedButtonAsset,
+    );
+  });
+
   testWidgets('onboarding offers the female wizard choice', (tester) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
