@@ -109,4 +109,88 @@ void main() {
     expect(find.text('Dialog'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final device in <({Size size, EdgeInsets padding, EdgeInsets gestures})>[
+    (
+      size: const Size(390, 844),
+      padding: const EdgeInsets.only(top: 47, bottom: 34),
+      gestures: const EdgeInsets.only(bottom: 34),
+    ),
+    (
+      size: const Size(844, 390),
+      padding: const EdgeInsets.only(left: 47, right: 47, bottom: 21),
+      gestures: const EdgeInsets.only(left: 47, right: 47, bottom: 21),
+    ),
+    (
+      size: const Size(360, 780),
+      padding: const EdgeInsets.only(top: 24),
+      gestures: const EdgeInsets.only(left: 16, right: 16, bottom: 24),
+    ),
+  ]) {
+    testWidgets('Safe insets constrain content on ${device.size}', (
+      tester,
+    ) async {
+      tester.view.physicalSize = device.size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      const safeCanvasKey = ValueKey('safe-canvas');
+      late MediaQueryData safeMedia;
+
+      await tester.pumpWidget(
+        MediaQuery(
+          data: MediaQueryData(
+            size: device.size,
+            padding: device.padding,
+            viewPadding: device.padding,
+            systemGestureInsets: device.gestures,
+          ),
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: FixedPhoneViewport(
+              child: Builder(
+                builder: (context) {
+                  safeMedia = MediaQuery.of(context);
+                  return const ColoredBox(
+                    key: safeCanvasKey,
+                    color: Colors.white,
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final viewportWidth = device.size.width < FixedPhoneViewport.maxWidth
+          ? device.size.width
+          : FixedPhoneViewport.maxWidth;
+      final left = device.padding.left > device.gestures.left
+          ? device.padding.left
+          : device.gestures.left;
+      final right = device.padding.right > device.gestures.right
+          ? device.padding.right
+          : device.gestures.right;
+      final bottom = device.padding.bottom > device.gestures.bottom
+          ? device.padding.bottom
+          : device.gestures.bottom;
+      final expectedSize = Size(
+        viewportWidth - left - right,
+        device.size.height - device.padding.top - bottom,
+      );
+      expect(safeMedia.size, expectedSize);
+      expect(safeMedia.padding, EdgeInsets.zero);
+      expect(safeMedia.systemGestureInsets, EdgeInsets.zero);
+      expect(tester.getSize(find.byKey(safeCanvasKey)), expectedSize);
+
+      final safeBox = tester.renderObject<RenderBox>(find.byKey(safeCanvasKey));
+      final topLeft = safeBox.localToGlobal(Offset.zero);
+      expect(
+        topLeft.dx,
+        closeTo((device.size.width - viewportWidth) / 2 + left, 0.001),
+      );
+      expect(topLeft.dy, closeTo(device.padding.top, 0.001));
+      expect(tester.takeException(), isNull);
+    });
+  }
 }

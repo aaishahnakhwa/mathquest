@@ -21,18 +21,47 @@ class FixedPhoneViewport extends StatelessWidget {
             math.min(constraints.maxWidth, maxWidth),
             constraints.maxHeight,
           );
+          final leftInset = math.min(
+            math.max(device.padding.left, device.systemGestureInsets.left),
+            viewportSize.width,
+          );
+          final rightInset = math.min(
+            math.max(device.padding.right, device.systemGestureInsets.right),
+            math.max(0.0, viewportSize.width - leftInset),
+          );
+          final topInset = math.min(device.padding.top, viewportSize.height);
+          final bottomInset = math.min(
+            math.max(device.padding.bottom, device.systemGestureInsets.bottom),
+            math.max(0.0, viewportSize.height - topInset),
+          );
+          final safeInsets = EdgeInsets.fromLTRB(
+            leftInset,
+            topInset,
+            rightInset,
+            bottomInset,
+          );
+          final safeSize = Size(
+            viewportSize.width - safeInsets.horizontal,
+            viewportSize.height - safeInsets.vertical,
+          );
           return Align(
             alignment: Alignment.topCenter,
             child: SizedBox(
               width: viewportSize.width,
               height: viewportSize.height,
               child: ClipRect(
-                child: MediaQuery(
-                  data: device.copyWith(
-                    size: viewportSize,
-                    textScaler: TextScaler.noScaling,
+                child: Padding(
+                  padding: safeInsets,
+                  child: MediaQuery(
+                    data: device.copyWith(
+                      size: safeSize,
+                      padding: EdgeInsets.zero,
+                      viewPadding: EdgeInsets.zero,
+                      systemGestureInsets: EdgeInsets.zero,
+                      textScaler: TextScaler.noScaling,
+                    ),
+                    child: child,
                   ),
-                  child: child,
                 ),
               ),
             ),

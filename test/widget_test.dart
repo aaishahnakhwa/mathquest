@@ -70,7 +70,7 @@ void main() {
       'Fraction Grove',
       'Ratio River',
       'Equation Climb',
-      'Puzzle Peak Boss Challenge',
+      'Pre-Algebra Review',
     ]);
     expect(world.levels.every((level) => level.questions.length == 5), isTrue);
     expect(questions, hasLength(25));
@@ -2227,7 +2227,7 @@ void main() {
       '6',
       '2:3',
       '4',
-      '20 km',
+      '20',
       '5',
     ]);
     for (final question in level.questions) {
@@ -2612,16 +2612,23 @@ void main() {
       15,
     ]);
     expect(level.id, 'w3_l5');
-    expect(level.difficulty, 'Mastery');
+    expect(level.difficulty, 'Intermediate');
     expect(level.questions, hasLength(5));
     expect(level.questions.map((q) => q.id).toSet(), hasLength(5));
     expect(level.questions.map((q) => q.options[q.correctAnswerIndex]), [
       '11',
-      '16',
+      '8',
       '4',
       '10',
       '6',
     ]);
+    expect(
+      worlds.last.levels
+          .where((level) => level.levelNumber >= 13)
+          .expand((level) => level.questions)
+          .every((question) => question.questionText.length <= 45),
+      isTrue,
+    );
     for (final question in level.questions) {
       expect(question.options.toSet(), hasLength(4));
       expect(question.explanationSteps, isNotEmpty);
