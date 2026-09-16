@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -33,6 +35,59 @@ class FoundationBuilderScreen extends StatefulWidget {
       return 'assets/images/world1_level${buildingIndex}_complete.png';
     }
     return 'assets/images/world1_level${buildingIndex}_stage$visualStage.png';
+  }
+
+  static List<String> assetsForLevel(LevelModel level) => List.generate(
+    GameProvider.levelHouseFinalStage + 1,
+    (stage) => imageForProgress(
+      progress: stage,
+      levelNumber: level.levelNumber,
+      worldId: level.worldId,
+    ),
+    growable: false,
+  );
+
+  static Future<void> precacheAssets(
+    BuildContext context,
+    LevelModel level, {
+    required int currentStage,
+  }) async {
+    final assets = assetsForLevel(level);
+    final currentAsset = imageForProgress(
+      progress: currentStage,
+      levelNumber: level.levelNumber,
+      worldId: level.worldId,
+    );
+    await precacheImage(AssetImage(currentAsset), context);
+    if (!context.mounted) return;
+    await Future.wait(
+      assets
+          .where((asset) => asset != currentAsset)
+          .map((asset) => precacheImage(AssetImage(asset), context)),
+    );
+  }
+
+  static Future<void> open(
+    BuildContext context,
+    LevelModel level, {
+    required int currentStage,
+    bool replace = false,
+  }) async {
+    final currentAsset = imageForProgress(
+      progress: currentStage,
+      levelNumber: level.levelNumber,
+      worldId: level.worldId,
+    );
+    await precacheImage(AssetImage(currentAsset), context);
+    if (!context.mounted) return;
+    final route = MaterialPageRoute<void>(
+      builder: (context) => FoundationBuilderScreen(level: level),
+    );
+    if (replace) {
+      await Navigator.pushReplacement(context, route);
+    } else {
+      await Navigator.push(context, route);
+    }
   }
 
   @override
@@ -75,6 +130,13 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
       if (_logsLaid >= _targetLogs) {
         _isCompleted = true;
       }
+      unawaited(
+        FoundationBuilderScreen.precacheAssets(
+          context,
+          widget.level,
+          currentStage: _logsLaid,
+        ),
+      );
       _initialized = true;
     }
   }
@@ -85,7 +147,7 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
     super.dispose();
   }
 
-  void _layWoodLog(GameProvider provider) {
+  Future<void> _layWoodLog(GameProvider provider) async {
     if (_logsLaid >= _targetLogs ||
         provider.player.woodLogs <= 0 ||
         _isBuilding) {
@@ -95,6 +157,15 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
     setState(() {
       _isBuilding = true;
     });
+
+    final nextStage = (_logsLaid + 1).clamp(0, _targetLogs);
+    final nextAsset = FoundationBuilderScreen.imageForProgress(
+      progress: nextStage,
+      levelNumber: widget.level.levelNumber,
+      worldId: widget.level.worldId,
+    );
+    await precacheImage(AssetImage(nextAsset), context);
+    if (!mounted) return;
 
     final didBuild = provider.advanceLevelHouseConstruction(widget.level);
     if (!didBuild) {
@@ -363,6 +434,8 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                                 width: double.infinity,
                                 height: double.infinity,
                                 fit: BoxFit.contain,
+                                gaplessPlayback: true,
+                                filterQuality: FilterQuality.medium,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
                                     color: Colors.amber.shade100,

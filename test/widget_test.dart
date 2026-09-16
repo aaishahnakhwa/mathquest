@@ -1279,6 +1279,28 @@ void main() {
     );
   });
 
+  test('construction assets stay within the phone-loading budget', () {
+    final assets = WorldRepository.getAllWorlds()
+        .expand((world) => world.levels)
+        .expand(FoundationBuilderScreen.assetsForLevel)
+        .toList(growable: false);
+
+    expect(assets, hasLength(75));
+    expect(assets.toSet(), hasLength(75));
+    final files = assets.map(File.new).toList(growable: false);
+    expect(files.every((file) => file.existsSync()), isTrue);
+    expect(
+      files.every((file) => file.lengthSync() < 1024 * 1024),
+      isTrue,
+      reason: 'Each stage should remain below 1 MB for quick transitions.',
+    );
+    expect(
+      files.fold<int>(0, (total, file) => total + file.lengthSync()),
+      lessThan(60 * 1024 * 1024),
+      reason: 'The full construction set should remain below 60 MB.',
+    );
+  });
+
   test('World 2 Level 6 cabin uses its own five construction visuals', () {
     expect(
       List.generate(

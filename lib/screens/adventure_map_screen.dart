@@ -542,13 +542,11 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                     (provider.supportsLevelBuilding(level) &&
                         isCompleted &&
                         !isHouseBuilt)
-                    ? () {
-                        Navigator.push(
+                    ? () async {
+                        await FoundationBuilderScreen.open(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                FoundationBuilderScreen(level: level),
-                          ),
+                          level,
+                          currentStage: provider.levelHouseStage(level),
                         );
                       }
                     : null,
@@ -621,7 +619,7 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
+      builder: (sheetContext) {
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
@@ -733,14 +731,12 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                         backgroundColor: GameColors.skyBlue,
                         shadowColor: GameColors.skyBlueDark,
                         textColor: Colors.white,
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.push(
+                        onPressed: () async {
+                          Navigator.pop(sheetContext);
+                          await FoundationBuilderScreen.open(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  FoundationBuilderScreen(level: level),
-                            ),
+                            level,
+                            currentStage: provider.levelHouseStage(level),
                           );
                         },
                       );

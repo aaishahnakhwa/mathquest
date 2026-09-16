@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -37,6 +39,24 @@ class LevelCompleteScreen extends StatelessWidget {
             : null;
         final canStartNext =
             didPass && nextLevel != null && provider.isLevelUnlocked(nextLevel);
+        final canBuild =
+            level != null &&
+            didPass &&
+            !provider.isTestMode &&
+            provider.supportsLevelBuilding(level) &&
+            !provider.isLevelHouseComplete(level);
+        if (canBuild) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!context.mounted) return;
+            unawaited(
+              FoundationBuilderScreen.precacheAssets(
+                context,
+                level,
+                currentStage: provider.levelHouseStage(level),
+              ),
+            );
+          });
+        }
 
         return PopScope(
           canPop: !provider.isTestMode,
@@ -241,23 +261,17 @@ class LevelCompleteScreen extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Build this level's new home on its own world-map plot.
-                    if (level != null &&
-                        didPass &&
-                        !provider.isTestMode &&
-                        provider.supportsLevelBuilding(level) &&
-                        !provider.isLevelHouseComplete(level))
+                    if (canBuild)
                       Container(
                         width: double.infinity,
                         margin: const EdgeInsets.only(bottom: 12),
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            Navigator.push(
+                          onPressed: () async {
+                            await FoundationBuilderScreen.open(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    FoundationBuilderScreen(level: level),
-                              ),
+                              level,
+                              currentStage: provider.levelHouseStage(level),
+                              replace: true,
                             );
                           },
                           style: ElevatedButton.styleFrom(
