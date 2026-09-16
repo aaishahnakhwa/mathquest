@@ -19,13 +19,21 @@ class MonsterModel {
 
   static MonsterModel getForWorld(String worldId) {
     switch (worldId) {
+      case 'world_3':
+        return const MonsterModel(
+          id: 'm_crimson_arcanist_zarek',
+          name: 'Crimson Arcanist Zarek',
+          emoji: '💎',
+          primaryColor: Color(0xFF991B1B),
+          secondaryColor: Color(0xFFEF4444),
+        );
       case 'world_2':
         return const MonsterModel(
-          id: 'm_goblin',
-          name: 'Timber Goblin',
-          emoji: '👺',
-          primaryColor: Color(0xFF15803D),
-          secondaryColor: Color(0xFF86EFAC),
+          id: 'm_frost_regent_veyr',
+          name: 'Frost Regent Veyr',
+          emoji: '❄️',
+          primaryColor: Color(0xFF1D4ED8),
+          secondaryColor: Color(0xFF7DD3FC),
         );
       case 'world_1':
       default:

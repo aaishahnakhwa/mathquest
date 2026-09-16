@@ -7,11 +7,9 @@ import '../models/level_model.dart';
 import '../models/question_model.dart';
 import '../models/achievement_model.dart';
 import '../models/shop_model.dart';
-import '../models/building_model.dart';
 import '../data/world_repository.dart';
 import '../data/achievements_repository.dart';
 import '../data/shop_repository.dart';
-import '../data/village_repository.dart';
 
 class GameProvider extends ChangeNotifier {
   static const int levelHouseFinalStage = 4;
@@ -20,10 +18,10 @@ class GameProvider extends ChangeNotifier {
   List<WorldModel> _worlds = [];
   List<AchievementModel> _achievements = [];
   List<ShopItemModel> _shopItems = [];
-  List<BuildingModel> _buildings = [];
 
   bool _isLoading = true;
   int _currentTab = 1; // Default tab: Map
+  bool _isTestMode = false;
 
   // Active Gameplay Session State
   LevelModel? _activeLevel;
@@ -38,6 +36,7 @@ class GameProvider extends ChangeNotifier {
 
   // Level Complete Dialog/Screen State
   bool _isLevelCompleted = false;
+  bool _didPassLevel = false;
   int _earnedStars = 0;
   int _earnedXp = 0;
   int _earnedCoins = 0;
@@ -50,17 +49,10 @@ class GameProvider extends ChangeNotifier {
   List<WorldModel> get worlds => _worlds;
   List<AchievementModel> get achievements => _achievements;
   List<ShopItemModel> get shopItems => _shopItems;
-  List<BuildingModel> get buildings => _buildings;
-
-  List<BuildingModel> get activeBuildings {
-    return _buildings.map((b) {
-      final currentStage = _player.buildingStages[b.id] ?? 0;
-      return b.copyWith(currentStage: currentStage);
-    }).toList();
-  }
 
   bool get isLoading => _isLoading;
   int get currentTab => _currentTab;
+  bool get isTestMode => _isTestMode;
 
   LevelModel? get activeLevel => _activeLevel;
   int get currentQuestionIndex => _currentQuestionIndex;
@@ -78,6 +70,7 @@ class GameProvider extends ChangeNotifier {
   bool get showExplanation => _showExplanation;
 
   bool get isLevelCompleted => _isLevelCompleted;
+  bool get didPassLevel => _didPassLevel;
   int get earnedStars => _earnedStars;
   int get earnedXp => _earnedXp;
   int get earnedCoins => _earnedCoins;
@@ -85,38 +78,19 @@ class GameProvider extends ChangeNotifier {
   int get earnedWoodLogs => _earnedWoodLogs;
   String? get pendingConstructionLevelId => _pendingConstructionLevelId;
 
+  bool get canClaimDailyReward => _cooldownReady(_player.lastDailyRewardAt);
+  bool get canClaimDailyChest => _cooldownReady(_player.lastDailyChestAt);
+
+  bool _cooldownReady(String lastClaimedAt) {
+    if (lastClaimedAt.isEmpty) return true;
+    final lastClaim = DateTime.tryParse(lastClaimedAt);
+    if (lastClaim == null) return true;
+    return DateTime.now().difference(lastClaim) >= const Duration(hours: 24);
+  }
+
   void clearPendingConstruction() {
     _pendingConstructionLevelId = null;
     notifyListeners();
-  }
-
-  bool upgradeBuilding(String buildingId) {
-    final buildingList = activeBuildings;
-    final index = buildingList.indexWhere((b) => b.id == buildingId);
-    if (index == -1) return false;
-
-    final building = buildingList[index];
-    if (building.isMaxStage) return false;
-
-    final coinCost = building.nextStageCoinCost;
-    final woodCost = building.nextStageWoodCost;
-
-    if (_player.coins < coinCost || _player.woodLogs < woodCost) {
-      return false;
-    }
-
-    final newBuildingStages = Map<String, int>.from(_player.buildingStages);
-    newBuildingStages[buildingId] = building.currentStage + 1;
-
-    _player = _player.copyWith(
-      coins: _player.coins - coinCost,
-      woodLogs: _player.woodLogs - woodCost,
-      buildingStages: newBuildingStages,
-    );
-
-    saveProgress();
-    notifyListeners();
-    return true;
   }
 
   int levelHouseStage(LevelModel level) {
@@ -136,8 +110,17 @@ class GameProvider extends ChangeNotifier {
   bool isLevelHouseComplete(LevelModel level) =>
       levelHouseStage(level) >= levelHouseFinalStage;
 
+  bool supportsLevelBuilding(LevelModel level) =>
+      level.worldId == 'world_1' ||
+      (level.worldId == 'world_2' &&
+          level.levelNumber >= 6 &&
+          level.levelNumber <= 10) ||
+      (level.worldId == 'world_3' &&
+          level.levelNumber >= 11 &&
+          level.levelNumber <= 15);
+
   bool advanceLevelHouseConstruction(LevelModel level) {
-    if (level.worldId != 'world_1' ||
+    if (!supportsLevelBuilding(level) ||
         !_player.completedLevelIds.contains(level.id) ||
         _player.woodLogs <= 0) {
       return false;
@@ -170,7 +153,6 @@ class GameProvider extends ChangeNotifier {
     _worlds = WorldRepository.getAllWorlds();
     _achievements = AchievementsRepository.getDefaultAchievements();
     _shopItems = ShopRepository.getDefaultShopItems();
-    _buildings = VillageRepository.getDefaultBuildings();
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -201,22 +183,20 @@ class GameProvider extends ChangeNotifier {
       0,
       (sum, stars) => sum + stars,
     );
-    final hasCompletedW1 =
-        cleanedCompletedLevels.contains('w1_l5') || cleanedTotalStars >= 10;
     final Set<String> cleanedUnlockedWorlds = {'world_1'};
-    if (hasCompletedW1) {
-      cleanedUnlockedWorlds.add('world_2');
-    }
-    if (cleanedTotalStars >= 25) {
-      cleanedUnlockedWorlds.add('world_3');
+    for (final world in _worlds.skip(1)) {
+      if (cleanedTotalStars >= world.reqStarsToUnlock) {
+        cleanedUnlockedWorlds.add(world.id);
+      }
     }
     _player = _player.copyWith(
       completedLevelIds: cleanedCompletedLevels,
       levelStars: cleanedLevelStars,
       unlockedWorldIds: cleanedUnlockedWorlds,
+      perfectLevelIds: _player.perfectLevelIds.intersection(validLevelIds),
     );
 
-    _updateStreakOnLoad();
+    _normalizeStreakOnLoad();
     _updateAchievementsProgress();
     await saveProgress();
 
@@ -238,22 +218,26 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _updateStreakOnLoad() {
-    final today = DateTime.now().toIso8601String().substring(0, 10);
-    if (_player.lastPlayDate.isEmpty) {
-      _player = _player.copyWith(lastPlayDate: today, streakDays: 1);
-    } else if (_player.lastPlayDate != today) {
-      final lastDate = DateTime.parse(_player.lastPlayDate);
-      final difference = DateTime.now().difference(lastDate).inDays;
-      if (difference == 1) {
-        _player = _player.copyWith(
-          streakDays: _player.streakDays + 1,
-          lastPlayDate: today,
-        );
-      } else if (difference > 1) {
-        _player = _player.copyWith(streakDays: 1, lastPlayDate: today);
-      }
+  void _normalizeStreakOnLoad() {
+    if (_player.lastPlayDate.isEmpty) return;
+    final lastDate = DateTime.tryParse(_player.lastPlayDate);
+    if (lastDate == null || DateTime.now().difference(lastDate).inDays > 1) {
+      _player = _player.copyWith(streakDays: 0);
     }
+  }
+
+  void _recordQuestCompletionToday() {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    if (_player.lastPlayDate == today) return;
+
+    final lastDate = DateTime.tryParse(_player.lastPlayDate);
+    final isConsecutive =
+        lastDate != null &&
+        DateTime.parse(today).difference(lastDate).inDays == 1;
+    _player = _player.copyWith(
+      streakDays: isConsecutive ? _player.streakDays + 1 : 1,
+      lastPlayDate: today,
+    );
   }
 
   void updatePlayerName(String name) {
@@ -282,6 +266,7 @@ class GameProvider extends ChangeNotifier {
     _currentTab = 1;
     _activeLevel = null;
     _isLevelCompleted = false;
+    _didPassLevel = false;
 
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -290,30 +275,53 @@ class GameProvider extends ChangeNotifier {
       debugPrint('Error clearing player prefs: $e');
     }
 
-    saveProgress();
+    await saveProgress();
     notifyListeners();
   }
 
-  void updatePlayerAvatar({
+  Future<void> updatePlayerAvatar({
     String? name,
     String? avatarId,
     String? hatId,
-    String? outfitId,
-    String? accessoryId,
-  }) {
+  }) async {
+    final supportedAvatarId = avatarId == 'hero_boy' ? 'hero_wizard' : avatarId;
     _player = _player.copyWith(
       name: name ?? _player.name,
-      avatarId: avatarId ?? _player.avatarId,
+      avatarId: supportedAvatarId ?? _player.avatarId,
       equippedHatId: hatId ?? _player.equippedHatId,
-      equippedOutfitId: outfitId ?? _player.equippedOutfitId,
-      equippedAccessoryId: accessoryId ?? _player.equippedAccessoryId,
+      onboardingCompleted: true,
     );
-    saveProgress();
+    await saveProgress();
     notifyListeners();
   }
 
   // GAMEPLAY LIFECYCLE
   void startLevel(LevelModel level) {
+    _startLevelSession(level, testMode: false);
+  }
+
+  void startTestLevel(LevelModel level) {
+    _startLevelSession(level, testMode: true);
+  }
+
+  void restartActiveLevel() {
+    final level = _activeLevel;
+    if (level == null) return;
+    _startLevelSession(level, testMode: _isTestMode);
+  }
+
+  void endTestSession() {
+    if (!_isTestMode) return;
+    _isTestMode = false;
+    _activeLevel = null;
+    _isLevelCompleted = false;
+    _didPassLevel = false;
+    _showExplanation = false;
+    notifyListeners();
+  }
+
+  void _startLevelSession(LevelModel level, {required bool testMode}) {
+    _isTestMode = testMode;
     _activeLevel = level;
     _currentQuestionIndex = 0;
     _selectedAnswerIndex = null;
@@ -324,6 +332,7 @@ class GameProvider extends ChangeNotifier {
     _hintsUsedInLevel = 0;
     _showExplanation = false;
     _isLevelCompleted = false;
+    _didPassLevel = false;
     _earnedStars = 0;
     _earnedXp = 0;
     _earnedCoins = 0;
@@ -334,7 +343,9 @@ class GameProvider extends ChangeNotifier {
   }
 
   void selectAnswer(int index) {
-    if (_isAnswerSubmitted) return;
+    if (_isAnswerSubmitted || _isLevelCompleted || _levelHeartsLeft <= 0) {
+      return;
+    }
     _selectedAnswerIndex = index;
     notifyListeners();
   }
@@ -342,6 +353,8 @@ class GameProvider extends ChangeNotifier {
   void submitAnswer() {
     if (_selectedAnswerIndex == null ||
         _isAnswerSubmitted ||
+        _isLevelCompleted ||
+        _levelHeartsLeft <= 0 ||
         currentQuestion == null) {
       return;
     }
@@ -361,22 +374,24 @@ class GameProvider extends ChangeNotifier {
       _earnedCoins += currentQuestion!.coinReward;
       _earnedGems += currentQuestion!.gemReward;
 
-      _player = _player.copyWith(
-        questionsSolved: updatedSolved,
-        correctAnswers: updatedCorrect,
-        coins: _player.coins + currentQuestion!.coinReward,
-        gems: _player.gems + currentQuestion!.gemReward,
-      );
+      if (!_isTestMode) {
+        _player = _player.copyWith(
+          questionsSolved: updatedSolved,
+          correctAnswers: updatedCorrect,
+        );
+      }
     } else {
       _levelHeartsLeft--;
       _showExplanation = true;
-      _player = _player.copyWith(
-        questionsSolved: updatedSolved,
-        correctAnswers: updatedCorrect,
-      );
+      if (!_isTestMode) {
+        _player = _player.copyWith(
+          questionsSolved: updatedSolved,
+          correctAnswers: updatedCorrect,
+        );
+      }
     }
 
-    saveProgress();
+    if (!_isTestMode) saveProgress();
     notifyListeners();
   }
 
@@ -386,7 +401,9 @@ class GameProvider extends ChangeNotifier {
   }
 
   void nextQuestion() {
-    if (_activeLevel == null) return;
+    if (_activeLevel == null || !_isAnswerSubmitted || _isLevelCompleted) {
+      return;
+    }
 
     _selectedAnswerIndex = null;
     _isAnswerSubmitted = false;
@@ -403,9 +420,15 @@ class GameProvider extends ChangeNotifier {
 
   // HINT SYSTEM (INSTANTLY DEDUCTS 3 GEMS & SAVES STATE)
   bool useHint() {
-    if (_player.gems < 3 || currentQuestion == null) {
+    if (currentQuestion == null || _isAnswerSubmitted || _isLevelCompleted) {
       return false;
     }
+    if (_isTestMode) {
+      _hintsUsedInLevel++;
+      notifyListeners();
+      return true;
+    }
+    if (_player.gems < 3) return false;
     final newGems = _player.gems - 3;
     _player = _player.copyWith(gems: newGems);
     _hintsUsedInLevel++;
@@ -416,6 +439,12 @@ class GameProvider extends ChangeNotifier {
 
   // REVIVE SYSTEM (INSTANTLY DEDUCTS 5 GEMS)
   bool reviveLevelWithGems() {
+    if (_levelHeartsLeft > 0 || _isLevelCompleted) return false;
+    if (_isTestMode) {
+      _levelHeartsLeft = 3;
+      notifyListeners();
+      return true;
+    }
     if (_player.gems < 5) return false;
     _player = _player.copyWith(gems: _player.gems - 5);
     _levelHeartsLeft = 3;
@@ -431,10 +460,30 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void claimDailyReward(int coinAmount) {
-    _player = _player.copyWith(coins: _player.coins + coinAmount);
+  bool claimDailyReward(int coinAmount) {
+    if (!canClaimDailyReward) return false;
+    _player = _player.copyWith(
+      coins: _player.coins + coinAmount,
+      lifetimeCoinsEarned: _player.lifetimeCoinsEarned + coinAmount,
+      lastDailyRewardAt: DateTime.now().toIso8601String(),
+    );
+    _updateAchievementsProgress();
     saveProgress();
     notifyListeners();
+    return true;
+  }
+
+  bool claimDailyChest(int coinAmount) {
+    if (!canClaimDailyChest) return false;
+    _player = _player.copyWith(
+      coins: _player.coins + coinAmount,
+      lifetimeCoinsEarned: _player.lifetimeCoinsEarned + coinAmount,
+      lastDailyChestAt: DateTime.now().toIso8601String(),
+    );
+    _updateAchievementsProgress();
+    saveProgress();
+    notifyListeners();
+    return true;
   }
 
   void _finishLevel() {
@@ -453,10 +502,28 @@ class GameProvider extends ChangeNotifier {
       _earnedStars = 0;
     }
 
-    final levelBonusGems = _earnedStars == 3 ? 3 : 1;
-    final levelBonusCoins = 30 + (_earnedStars * 10);
-    _earnedWoodLogs = 2 + (_earnedStars * 1); // 2 to 5 Wood Logs per level!
-    _earnedXp += 50 + (_earnedStars * 20);
+    _didPassLevel = ratio >= 0.6;
+    if (!_didPassLevel) {
+      _earnedStars = 0;
+    }
+
+    if (_isTestMode) {
+      _isLevelCompleted = true;
+      notifyListeners();
+      return;
+    }
+
+    if (!_didPassLevel) {
+      _earnedXp = 0;
+      _earnedCoins = 0;
+      _earnedGems = 0;
+      _earnedWoodLogs = 0;
+      _pendingConstructionLevelId = null;
+      _isLevelCompleted = true;
+      saveProgress();
+      notifyListeners();
+      return;
+    }
 
     final newLevelStars = Map<String, int>.from(_player.levelStars);
     final previousStars = newLevelStars[_activeLevel!.id] ?? 0;
@@ -465,6 +532,7 @@ class GameProvider extends ChangeNotifier {
     }
 
     final newCompletedLevels = Set<String>.from(_player.completedLevelIds);
+    final isFirstCompletion = !newCompletedLevels.contains(_activeLevel!.id);
     newCompletedLevels.add(_activeLevel!.id);
 
     final newUnlockedWorlds = Set<String>.from(_player.unlockedWorldIds);
@@ -473,12 +541,30 @@ class GameProvider extends ChangeNotifier {
       (sum, stars) => sum + stars,
     );
 
-    if (newTotalStars >= 10 || newCompletedLevels.contains('w1_l5')) {
-      newUnlockedWorlds.add('world_2');
+    for (final world in _worlds.skip(1)) {
+      if (newTotalStars >= world.reqStarsToUnlock) {
+        newUnlockedWorlds.add(world.id);
+      }
     }
-    if (newTotalStars >= 25) {
-      newUnlockedWorlds.add('world_3');
+
+    final newPerfectLevelIds = Set<String>.from(_player.perfectLevelIds);
+    if (_earnedStars == 3) {
+      newPerfectLevelIds.add(_activeLevel!.id);
     }
+
+    if (isFirstCompletion) {
+      _earnedCoins += 30 + (_earnedStars * 10);
+      _earnedGems += _earnedStars == 3 ? 3 : 1;
+      _earnedWoodLogs = 2 + _earnedStars;
+      _earnedXp += 50 + (_earnedStars * 20);
+    } else {
+      _earnedXp = 0;
+      _earnedCoins = 0;
+      _earnedGems = 0;
+      _earnedWoodLogs = 0;
+    }
+    _recordQuestCompletionToday();
+
     int newCurrentXp = _player.currentXp + _earnedXp;
     int newLevel = _player.level;
     int newTotalXp = _player.totalXp + _earnedXp;
@@ -492,16 +578,18 @@ class GameProvider extends ChangeNotifier {
       level: newLevel,
       currentXp: newCurrentXp,
       totalXp: newTotalXp,
-      coins: _player.coins + levelBonusCoins,
-      gems: _player.gems + levelBonusGems,
+      coins: _player.coins + _earnedCoins,
+      gems: _player.gems + _earnedGems,
       woodLogs: _player.woodLogs + _earnedWoodLogs,
       levelStars: newLevelStars,
       completedLevelIds: newCompletedLevels,
       unlockedWorldIds: newUnlockedWorlds,
+      perfectLevelIds: newPerfectLevelIds,
+      lifetimeCoinsEarned: _player.lifetimeCoinsEarned + _earnedCoins,
     );
 
     _isLevelCompleted = true;
-    _pendingConstructionLevelId = _activeLevel!.id;
+    _pendingConstructionLevelId = isFirstCompletion ? _activeLevel!.id : null;
     _updateAchievementsProgress();
     saveProgress();
     notifyListeners();
@@ -524,7 +612,7 @@ class GameProvider extends ChangeNotifier {
           currentProgress = _player.streakDays.toDouble();
           break;
         case 'ach_no_mistakes':
-          currentProgress = (_earnedStars == 3 && _isLevelCompleted) ? 1 : 0;
+          currentProgress = _player.perfectLevelIds.isNotEmpty ? 1 : 0;
           break;
         case 'ach_world_explorer':
           currentProgress = _player.unlockedWorldIds.contains('world_2')
@@ -538,13 +626,18 @@ class GameProvider extends ChangeNotifier {
               .toDouble();
           break;
         case 'ach_coin_collector':
-          currentProgress = _player.coins.toDouble();
+          currentProgress = _player.lifetimeCoinsEarned.toDouble();
           break;
         default:
           currentProgress = ach.currentProgress;
       }
 
-      updatedList.add(ach.copyWith(currentProgress: currentProgress));
+      updatedList.add(
+        ach.copyWith(
+          currentProgress: currentProgress,
+          isClaimed: _player.claimedAchievementIds.contains(ach.id),
+        ),
+      );
     }
 
     _achievements = updatedList;
@@ -556,19 +649,25 @@ class GameProvider extends ChangeNotifier {
         _achievements[index].isCompleted &&
         !_achievements[index].isClaimed) {
       final ach = _achievements[index];
+      final claimedIds = Set<String>.from(_player.claimedAchievementIds)
+        ..add(ach.id);
 
       _player = _player.copyWith(
         coins: _player.coins + ach.rewardCoins,
         gems: _player.gems + ach.rewardGems,
+        lifetimeCoinsEarned: _player.lifetimeCoinsEarned + ach.rewardCoins,
+        claimedAchievementIds: claimedIds,
       );
 
       _achievements[index] = ach.copyWith(isClaimed: true);
+      _updateAchievementsProgress();
       saveProgress();
       notifyListeners();
     }
   }
 
   void purchaseShopItem(ShopItemModel item) {
+    if (_player.inventoryItemIds.contains(item.id)) return;
     if (item.currency == CurrencyType.coins && _player.coins < item.price) {
       return;
     }
@@ -604,13 +703,7 @@ class GameProvider extends ChangeNotifier {
   void equipShopItem(ShopItemModel item) {
     if (!_player.inventoryItemIds.contains(item.id)) return;
 
-    if (item.category == ShopCategory.avatarHat) {
-      _player = _player.copyWith(equippedHatId: item.id);
-    } else if (item.category == ShopCategory.avatarOutfit) {
-      _player = _player.copyWith(equippedOutfitId: item.id);
-    } else if (item.category == ShopCategory.accessory) {
-      _player = _player.copyWith(equippedAccessoryId: item.id);
-    }
+    _player = _player.copyWith(equippedHatId: item.id);
 
     _shopItems = _shopItems.map((s) {
       if (s.category == item.category) {
@@ -628,7 +721,15 @@ class GameProvider extends ChangeNotifier {
       return true;
     }
 
+    if (_player.completedLevelIds.contains(level.id)) {
+      return true;
+    }
+
     if (!_player.unlockedWorldIds.contains(level.worldId)) {
+      return false;
+    }
+
+    if (_player.totalStars < level.reqStarsToUnlock) {
       return false;
     }
 
@@ -644,7 +745,6 @@ class GameProvider extends ChangeNotifier {
     }
 
     final previousLevel = world.levels[index - 1];
-    return _player.completedLevelIds.contains(previousLevel.id) ||
-        _player.completedLevelIds.contains(level.id);
+    return _player.completedLevelIds.contains(previousLevel.id);
   }
 }

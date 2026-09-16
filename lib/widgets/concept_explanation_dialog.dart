@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/question_model.dart';
 import '../theme/colors.dart';
 import 'game_button.dart';
@@ -25,10 +26,7 @@ class ConceptExplanationDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(28),
           border: Border.all(color: const Color(0xFFF59E0B), width: 4),
           boxShadow: [
-            const BoxShadow(
-              color: Color(0xFFD97706),
-              offset: Offset(0, 7),
-            ),
+            const BoxShadow(color: Color(0xFFD97706), offset: Offset(0, 7)),
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.25),
               blurRadius: 20,
@@ -51,7 +49,10 @@ class ConceptExplanationDialog extends StatelessWidget {
                       color: GameColors.coralLight,
                       border: Border.all(color: GameColors.coral, width: 2.5),
                       boxShadow: const [
-                        BoxShadow(color: GameColors.coralDark, offset: Offset(0, 3)),
+                        BoxShadow(
+                          color: GameColors.coralDark,
+                          offset: Offset(0, 3),
+                        ),
                       ],
                     ),
                     child: const Center(
@@ -107,12 +108,12 @@ class ConceptExplanationDialog extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF0284C7), width: 2.5),
+                  border: Border.all(
+                    color: const Color(0xFF0284C7),
+                    width: 2.5,
+                  ),
                   boxShadow: const [
-                    BoxShadow(
-                      color: Color(0xFF0369A1),
-                      offset: Offset(0, 3.5),
-                    ),
+                    BoxShadow(color: Color(0xFF0369A1), offset: Offset(0, 3.5)),
                   ],
                 ),
                 child: ClipRRect(
@@ -156,11 +157,17 @@ class ConceptExplanationDialog extends StatelessWidget {
                       ),
                       // Card Content
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         child: Column(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF0284C7),
                                 borderRadius: BorderRadius.circular(8),
@@ -201,12 +208,12 @@ class ConceptExplanationDialog extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(22),
-                  border: Border.all(color: const Color(0xFFF59E0B), width: 2.5),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B),
+                    width: 2.5,
+                  ),
                   boxShadow: const [
-                    BoxShadow(
-                      color: Color(0xFFD97706),
-                      offset: Offset(0, 4),
-                    ),
+                    BoxShadow(color: Color(0xFFD97706), offset: Offset(0, 4)),
                   ],
                 ),
                 child: ClipRRect(
@@ -256,15 +263,24 @@ class ConceptExplanationDialog extends StatelessWidget {
                           children: [
                             Row(
                               children: [
-                                const Text('💡', style: TextStyle(fontSize: 18)),
+                                const Text(
+                                  '💡',
+                                  style: TextStyle(fontSize: 18),
+                                ),
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFD97706),
                                     borderRadius: BorderRadius.circular(10),
                                     boxShadow: const [
-                                      BoxShadow(color: Color(0xFFB45309), offset: Offset(0, 2)),
+                                      BoxShadow(
+                                        color: Color(0xFFB45309),
+                                        offset: Offset(0, 2),
+                                      ),
                                     ],
                                   ),
                                   child: const Text(
@@ -287,7 +303,10 @@ class ConceptExplanationDialog extends StatelessWidget {
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text('👉 ', style: TextStyle(fontSize: 15)),
+                                    const Text(
+                                      '👉 ',
+                                      style: TextStyle(fontSize: 15),
+                                    ),
                                     Expanded(
                                       child: Text(
                                         step,
@@ -318,12 +337,12 @@ class ConceptExplanationDialog extends StatelessWidget {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFF7E22CE), width: 2.5),
+                  border: Border.all(
+                    color: const Color(0xFF7E22CE),
+                    width: 2.5,
+                  ),
                   boxShadow: const [
-                    BoxShadow(
-                      color: Color(0xFF581C87),
-                      offset: Offset(0, 4),
-                    ),
+                    BoxShadow(color: Color(0xFF581C87), offset: Offset(0, 4)),
                   ],
                 ),
                 child: ClipRRect(
@@ -367,7 +386,10 @@ class ConceptExplanationDialog extends StatelessWidget {
                       ),
                       // Banner Text Content
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

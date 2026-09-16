@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/colors.dart';
 
 class BottomGameNavBar extends StatelessWidget {
@@ -50,15 +51,18 @@ class BottomGameNavBar extends StatelessWidget {
                 behavior: HitTestBehavior.opaque,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: isSelected
                       ? BoxDecoration(
                           color: GameColors.turquoise.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                              color: GameColors.turquoise.withValues(alpha: 0.4),
-                              width: 1.5),
+                            color: GameColors.turquoise.withValues(alpha: 0.4),
+                            width: 1.5,
+                          ),
                         )
                       : null,
                   child: Column(
@@ -79,8 +83,9 @@ class BottomGameNavBar extends StatelessWidget {
                         style: TextStyle(
                           fontFamily: 'Fredoka',
                           fontSize: 10,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.w500,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
                           color: isSelected
                               ? GameColors.skyBlueDark
                               : GameColors.navyTextMuted,

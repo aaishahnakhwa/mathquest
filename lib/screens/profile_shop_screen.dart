@@ -99,7 +99,6 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
                 AvatarWidget(
                   avatarId: player.avatarId,
                   equippedHatId: player.equippedHatId,
-                  equippedOutfitId: player.equippedOutfitId,
                   size: 90,
                 ),
                 const SizedBox(height: 12),
@@ -667,10 +666,7 @@ class _ProfileAndShopScreenState extends State<ProfileAndShopScreen>
         final isUnlocked =
             provider.player.inventoryItemIds.contains(item.id) ||
             item.isUnlocked;
-        final isEquipped =
-            (item.id == provider.player.equippedHatId ||
-            item.id == provider.player.equippedOutfitId ||
-            item.id == provider.player.equippedAccessoryId);
+        final isEquipped = item.id == provider.player.equippedHatId;
 
         return Container(
           padding: const EdgeInsets.all(16),

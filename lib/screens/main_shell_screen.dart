@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/game_provider.dart';
 import '../widgets/game_hud_bar.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/cheat_code_access_button.dart';
 import 'home_screen.dart';
 import 'adventure_map_screen.dart';
 import 'rewards_screen.dart';
@@ -18,9 +20,7 @@ class MainShellScreen extends StatelessWidget {
       builder: (context, provider, child) {
         if (provider.isLoading) {
           return const Scaffold(
-            body: Center(
-              child: CircularProgressIndicator(),
-            ),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -34,9 +34,15 @@ class MainShellScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: const GameHudBar(),
-          body: IndexedStack(
-            index: provider.currentTab,
-            children: screens,
+          body: Stack(
+            children: [
+              IndexedStack(index: provider.currentTab, children: screens),
+              const Positioned(
+                right: 12,
+                bottom: 12,
+                child: CheatCodeAccessButton(),
+              ),
+            ],
           ),
           bottomNavigationBar: BottomGameNavBar(
             currentIndex: provider.currentTab,

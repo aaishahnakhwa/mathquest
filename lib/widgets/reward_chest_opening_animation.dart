@@ -1,5 +1,7 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
 import '../theme/colors.dart';
 import 'gift_box_painter.dart';
 
@@ -141,15 +143,21 @@ class _RewardChestOpeningAnimationState
                             const SizedBox(height: 14),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: GameColors.freshGreen,
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: GameColors.freshGreenDark
-                                        .withValues(alpha: 0.4),
+                                    color: GameColors.freshGreenDark.withValues(
+                                      alpha: 0.4,
+                                    ),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
                                   ),
@@ -158,16 +166,21 @@ class _RewardChestOpeningAnimationState
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.touch_app_rounded,
-                                      color: Colors.white, size: 18),
+                                  Icon(
+                                    Icons.touch_app_rounded,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
                                   SizedBox(width: 6),
-                                  Text('TAP TO OPEN TREASURE CHEST!',
-                                      style: TextStyle(
-                                        fontFamily: 'Fredoka',
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      )),
+                                  Text(
+                                    'TAP TO OPEN TREASURE CHEST!',
+                                    style: TextStyle(
+                                      fontFamily: 'Fredoka',
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
@@ -183,8 +196,9 @@ class _RewardChestOpeningAnimationState
                     animation: _openController,
                     builder: (context, child) {
                       final popVal = CurvedAnimation(
-                              parent: _openController, curve: Curves.elasticOut)
-                          .value;
+                        parent: _openController,
+                        curve: Curves.elasticOut,
+                      ).value;
 
                       return Stack(
                         alignment: Alignment.center,
@@ -213,10 +227,12 @@ class _RewardChestOpeningAnimationState
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: List.generate(3, (index) {
-                                      final hasStar = index < widget.earnedStars;
+                                      final hasStar =
+                                          index < widget.earnedStars;
                                       return Padding(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 4.0),
+                                          horizontal: 4.0,
+                                        ),
                                         child: VectorStarWidget(
                                           size: 38,
                                           isFilled: hasStar,
@@ -232,16 +248,23 @@ class _RewardChestOpeningAnimationState
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 6),
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: GameColors.sunnyYellow,
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                           border: Border.all(
-                                              color: Colors.white, width: 2),
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
                                           boxShadow: const [
                                             BoxShadow(
-                                                color: Colors.black26,
-                                                blurRadius: 6)
+                                              color: Colors.black26,
+                                              blurRadius: 6,
+                                            ),
                                           ],
                                         ),
                                         child: Row(
@@ -263,16 +286,23 @@ class _RewardChestOpeningAnimationState
                                       const SizedBox(width: 10),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 12, vertical: 6),
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: GameColors.gemPurple,
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                           border: Border.all(
-                                              color: Colors.white, width: 2),
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
                                           boxShadow: const [
                                             BoxShadow(
-                                                color: Colors.black26,
-                                                blurRadius: 6)
+                                              color: Colors.black26,
+                                              blurRadius: 6,
+                                            ),
                                           ],
                                         ),
                                         child: Row(
@@ -341,7 +371,8 @@ class _VectorConfettiPainter extends CustomPainter {
     for (final r in ribbons) {
       final dist = r.speed * progress;
       final dx = center.dx + math.cos(r.angle) * dist;
-      final dy = center.dy + math.sin(r.angle) * dist + (progress * progress * 100);
+      final dy =
+          center.dy + math.sin(r.angle) * dist + (progress * progress * 100);
       final opacity = (1.0 - progress).clamp(0.0, 1.0);
 
       canvas.save();

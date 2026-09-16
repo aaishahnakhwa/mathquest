@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
 import 'providers/game_provider.dart';
 import 'services/audio_service.dart';
 import 'theme/game_theme.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/main_shell_screen.dart';
+import 'widgets/fixed_phone_viewport.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,19 +44,18 @@ class _MathQuestAppState extends State<MathQuestApp> {
         title: 'Math Quest',
         debugShowCheckedModeBanner: false,
         theme: GameTheme.themeData,
+        builder: (context, child) =>
+            FixedPhoneViewport(child: child ?? const SizedBox.shrink()),
         home: Consumer<GameProvider>(
           builder: (context, provider, child) {
             if (provider.isLoading) {
               return const Scaffold(
-                body: Center(
-                  child: CircularProgressIndicator(),
-                ),
+                body: Center(child: CircularProgressIndicator()),
               );
             }
 
             // Route to Onboarding if new player, else directly to Main Shell
-            if (provider.player.questionsSolved == 0 &&
-                provider.player.totalStars == 0) {
+            if (!provider.player.onboardingCompleted) {
               return const OnboardingScreen();
             }
             return const MainShellScreen();

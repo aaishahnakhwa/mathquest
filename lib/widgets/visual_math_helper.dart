@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/colors.dart';
 
 class VisualMathHelper extends StatelessWidget {
@@ -13,12 +14,20 @@ class VisualMathHelper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final numbers = RegExp(r'\d+').allMatches(questionText).map((m) => int.parse(m.group(0)!)).toList();
+    final numbers = RegExp(r'\d+')
+        .allMatches(questionText)
+        .map((m) => int.parse(m.group(0)!))
+        .toList();
 
-    if (numbers.length >= 2 && (topic.contains('Addition') || topic.contains('Subtraction') || questionText.contains('+') || questionText.contains('-'))) {
+    if (numbers.length >= 2 &&
+        (topic.contains('Addition') ||
+            topic.contains('Subtraction') ||
+            questionText.contains('+') ||
+            questionText.contains('-'))) {
       final num1 = numbers[0];
       final num2 = numbers[1];
-      final isAddition = questionText.contains('+') || topic.contains('Addition');
+      final isAddition =
+          questionText.contains('+') || topic.contains('Addition');
 
       return Container(
         width: double.infinity,
@@ -26,10 +35,7 @@ class VisualMathHelper extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFCBD5E1), width: 2),
           boxShadow: const [
-            BoxShadow(
-              color: Color(0xFF94A3B8),
-              offset: Offset(0, 3),
-            ),
+            BoxShadow(color: Color(0xFF94A3B8), offset: Offset(0, 3)),
           ],
         ),
         child: ClipRRect(
@@ -73,13 +79,20 @@ class VisualMathHelper extends StatelessWidget {
               ),
               // Helper Content
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.bar_chart_rounded, size: 14, color: GameColors.navyTextMuted),
+                        const Icon(
+                          Icons.bar_chart_rounded,
+                          size: 14,
+                          color: GameColors.navyTextMuted,
+                        ),
                         const SizedBox(width: 4),
                         const Text(
                           'VISUAL BLOCK HELPER:',
@@ -109,7 +122,9 @@ class VisualMathHelper extends StatelessWidget {
                             textColor: const Color(0xFF1D4ED8),
                           ),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14.0,
+                            ),
                             child: Text(
                               isAddition ? '+' : '-',
                               style: const TextStyle(

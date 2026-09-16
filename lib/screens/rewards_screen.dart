@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/game_provider.dart';
 import '../theme/colors.dart';
 import '../widgets/game_button.dart';
@@ -14,9 +16,6 @@ class RewardsScreen extends StatefulWidget {
 }
 
 class _RewardsScreenState extends State<RewardsScreen> {
-  bool _claimedToday = false;
-  bool _isChestOpened = false;
-
   @override
   Widget build(BuildContext context) {
     return Consumer<GameProvider>(
@@ -119,7 +118,8 @@ class _RewardsScreenState extends State<RewardsScreen> {
                           textColor: GameColors.navyText,
                           height: 38,
                           fontSize: 11,
-                          onPressed: () => _showRewardedAdModal(context, provider),
+                          onPressed: () =>
+                              _showRewardedAdModal(context, provider),
                         ),
                       ],
                     ),
@@ -133,7 +133,10 @@ class _RewardsScreenState extends State<RewardsScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: GameColors.cardBorder, width: 2),
+                      border: Border.all(
+                        color: GameColors.cardBorder,
+                        width: 2,
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: GameColors.navyText.withValues(alpha: 0.05),
@@ -149,7 +152,10 @@ class _RewardsScreenState extends State<RewardsScreen> {
                           children: [
                             Row(
                               children: [
-                                const Text('🔥 ', style: TextStyle(fontSize: 24)),
+                                const Text(
+                                  '🔥 ',
+                                  style: TextStyle(fontSize: 24),
+                                ),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -199,13 +205,17 @@ class _RewardsScreenState extends State<RewardsScreen> {
                                     border: isCurrent
                                         ? Border.all(
                                             color: GameColors.sunnyYellow,
-                                            width: 3)
+                                            width: 3,
+                                          )
                                         : null,
                                   ),
                                   child: Center(
                                     child: isCompleted
-                                        ? const Icon(Icons.check_rounded,
-                                            color: Colors.white, size: 20)
+                                        ? const Icon(
+                                            Icons.check_rounded,
+                                            color: Colors.white,
+                                            size: 20,
+                                          )
                                         : Text(
                                             '$dayNum',
                                             style: const TextStyle(
@@ -243,7 +253,10 @@ class _RewardsScreenState extends State<RewardsScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: GameColors.cardBorder, width: 2),
+                      border: Border.all(
+                        color: GameColors.cardBorder,
+                        width: 2,
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -269,25 +282,27 @@ class _RewardsScreenState extends State<RewardsScreen> {
                         ),
                         const SizedBox(height: 16),
                         GameButton(
-                          text: _claimedToday ? 'CLAIMED TODAY ✓' : 'CLAIM 50 COINS 💰',
-                          backgroundColor: _claimedToday
+                          text: !provider.canClaimDailyReward
+                              ? 'CLAIMED TODAY ✓'
+                              : 'CLAIM 50 COINS 💰',
+                          backgroundColor: !provider.canClaimDailyReward
                               ? Colors.grey.shade400
                               : GameColors.freshGreen,
-                          shadowColor: _claimedToday
+                          shadowColor: !provider.canClaimDailyReward
                               ? Colors.grey.shade600
                               : GameColors.freshGreenDark,
                           textColor: Colors.white,
-                          onPressed: _claimedToday
+                          onPressed: !provider.canClaimDailyReward
                               ? null
                               : () {
-                                  setState(() => _claimedToday = true);
-                                  provider.claimDailyReward(50);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('🎉 Claimed 50 Coins!'),
-                                      backgroundColor: GameColors.freshGreen,
-                                    ),
-                                  );
+                                  if (provider.claimDailyReward(50)) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('🎉 Claimed 50 Coins!'),
+                                        backgroundColor: GameColors.freshGreen,
+                                      ),
+                                    );
+                                  }
                                 },
                         ),
                       ],
@@ -308,14 +323,14 @@ class _RewardsScreenState extends State<RewardsScreen> {
                   const SizedBox(height: 10),
                   Center(
                     child: RewardChestWidget(
-                      isOpen: _isChestOpened,
+                      isOpen: !provider.canClaimDailyChest,
                       onOpen: () {
-                        if (!_isChestOpened) {
-                          setState(() => _isChestOpened = true);
-                          provider.claimDailyReward(100);
+                        if (provider.claimDailyChest(100)) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('🎁 Opened Chest! Earned +100 Coins!'),
+                              content: Text(
+                                '🎁 Opened Chest! Earned +100 Coins!',
+                              ),
                               backgroundColor: GameColors.sunnyYellow,
                             ),
                           );
@@ -413,8 +428,11 @@ class _RewardedAdDialogState extends State<_RewardedAdDialog> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.play_circle_fill_rounded,
-                    size: 44, color: GameColors.sunnyYellow),
+                const Icon(
+                  Icons.play_circle_fill_rounded,
+                  size: 44,
+                  color: GameColors.sunnyYellow,
+                ),
                 const SizedBox(height: 6),
                 Text(
                   'Reward in $_countdown seconds...',

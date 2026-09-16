@@ -20,11 +20,28 @@ class HomeScreen extends StatelessWidget {
           orElse: () => provider.worlds.first,
         );
 
-        // Find next playable level
-        final nextLevel = currentWorld.levels.firstWhere(
-          (l) => !player.completedLevelIds.contains(l.id),
-          orElse: () => currentWorld.levels.last,
+        final playableIncompleteLevels = currentWorld.levels
+            .where(
+              (level) =>
+                  !player.completedLevelIds.contains(level.id) &&
+                  provider.isLevelUnlocked(level),
+            )
+            .toList();
+        final hasNewPlayableLevel = playableIncompleteLevels.isNotEmpty;
+        final completedLevels = currentWorld.levels
+            .where((level) => player.completedLevelIds.contains(level.id))
+            .toList();
+        final currentWorldStars = currentWorld.levels.fold<int>(
+          0,
+          (sum, level) => sum + (player.levelStars[level.id] ?? 0),
         );
+        final hasPerfectedWorld =
+            currentWorldStars == currentWorld.levels.length * 3;
+        final nextLevel = hasNewPlayableLevel
+            ? playableIncompleteLevels.first
+            : completedLevels.isNotEmpty
+            ? completedLevels.last
+            : currentWorld.levels.first;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -179,7 +196,11 @@ class HomeScreen extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    '🎯 Next: Level ${nextLevel.levelNumber} - ${nextLevel.title}',
+                                    hasNewPlayableLevel
+                                        ? '🎯 Next: Level ${nextLevel.levelNumber} - ${nextLevel.title}'
+                                        : hasPerfectedWorld
+                                        ? '🏆 ${currentWorld.name} mastered! Replay any quest'
+                                        : '⭐ Replay Level ${nextLevel.levelNumber} to improve your stars',
                                     style: const TextStyle(
                                       fontFamily: 'Fredoka',
                                       fontSize: 13,
@@ -192,7 +213,11 @@ class HomeScreen extends StatelessWidget {
 
                                 // Primary Hero CTA: CONTINUE ADVENTURE
                                 GameButton(
-                                  text: 'CONTINUE ADVENTURE',
+                                  text: hasNewPlayableLevel
+                                      ? 'CONTINUE ADVENTURE'
+                                      : hasPerfectedWorld
+                                      ? 'REPLAY FINAL QUEST'
+                                      : 'IMPROVE STARS',
                                   icon: const Text(
                                     '🚀',
                                     style: TextStyle(fontSize: 20),
@@ -220,91 +245,6 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Daily Challenge Section
-              const Text(
-                'DAILY CHALLENGE',
-                style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: GameColors.navyText,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: GameColors.surfaceWarm,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: GameColors.sunnyYellow, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: GameColors.navyText.withValues(alpha: 0.06),
-                      blurRadius: 6,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: GameColors.sunnyYellow.withValues(alpha: 0.3),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Text('⚡', style: TextStyle(fontSize: 28)),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Complete 5 Math Challenges',
-                            style: TextStyle(
-                              fontFamily: 'Fredoka',
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: GameColors.navyText,
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Reward: +100 XP • +25 Coins • +1 Gem',
-                            style: TextStyle(
-                              fontFamily: 'Nunito',
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: GameColors.yellowDark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: GameColors.freshGreen,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Text(
-                        'GO!',
-                        style: TextStyle(
-                          fontFamily: 'Fredoka',
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
               const SizedBox(height: 24),

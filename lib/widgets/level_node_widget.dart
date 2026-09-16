@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/level_model.dart';
 import '../theme/colors.dart';
 import 'avatar_widget.dart';
@@ -23,7 +24,7 @@ class LevelNodeWidget extends StatefulWidget {
     required this.earnedStars,
     required this.onTap,
     this.onBuildTap,
-    this.playerAvatarId = 'hero_wizard',
+    this.playerAvatarId = AvatarWidget.maleWizardId,
     this.playerHatId = 'hat_wizard_starter',
   });
 
@@ -57,6 +58,9 @@ class _LevelNodeWidgetState extends State<LevelNodeWidget>
 
   @override
   Widget build(BuildContext context) {
+    final playerCharacterAsset = AvatarWidget.mapCharacterAssetFor(
+      widget.playerAvatarId,
+    );
     final int buttonIndex = widget.level.levelNumber <= 11
         ? widget.level.levelNumber
         : (((widget.level.levelNumber - 1) % 10) + 1);
@@ -97,18 +101,21 @@ class _LevelNodeWidgetState extends State<LevelNodeWidget>
                                 // Hero Badge Pill Above Hat
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
                                       colors: [
                                         Color(0xFFFFFDF0),
-                                        Color(0xFFFEF08A)
+                                        Color(0xFFFEF08A),
                                       ],
                                     ),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                        color: const Color(0xFFF59E0B),
-                                        width: 1.2),
+                                      color: const Color(0xFFF59E0B),
+                                      width: 1.2,
+                                    ),
                                     boxShadow: const [
                                       BoxShadow(
                                         color: Colors.black26,
@@ -130,9 +137,9 @@ class _LevelNodeWidgetState extends State<LevelNodeWidget>
                                 const SizedBox(height: 1.5),
 
                                 // Full-Body Wizard Character Asset or Avatar Fallback
-                                if (widget.playerAvatarId == 'hero_wizard')
+                                if (playerCharacterAsset != null)
                                   Image.asset(
-                                    'assets/images/wizard_character.png',
+                                    playerCharacterAsset,
                                     height: 48,
                                     fit: BoxFit.contain,
                                   )
@@ -188,12 +195,16 @@ class _LevelNodeWidgetState extends State<LevelNodeWidget>
                       bottom: -12,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 1.5),
+                          horizontal: 5,
+                          vertical: 1.5,
+                        ),
                         decoration: BoxDecoration(
                           color: GameColors.surfaceWarm,
                           borderRadius: BorderRadius.circular(10),
-                          border:
-                              Border.all(color: GameColors.sunnyYellow, width: 1.5),
+                          border: Border.all(
+                            color: GameColors.sunnyYellow,
+                            width: 1.5,
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: GameColors.navyText.withValues(alpha: 0.2),
@@ -233,8 +244,10 @@ class _LevelNodeWidgetState extends State<LevelNodeWidget>
                 onTap: widget.onBuildTap,
                 behavior: HitTestBehavior.opaque,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
@@ -252,10 +265,7 @@ class _LevelNodeWidgetState extends State<LevelNodeWidget>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset(
-                        'assets/images/wood_log.png',
-                        height: 9,
-                      ),
+                      Image.asset('assets/images/wood_log.png', height: 9),
                       const SizedBox(width: 2),
                       const Text(
                         'BUILD 🛠️',

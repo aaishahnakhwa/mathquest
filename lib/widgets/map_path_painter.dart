@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class MapPathPainter extends CustomPainter {
@@ -46,7 +47,8 @@ class MapPathPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = const Color(0xFF4A2E17) // Dark hemp outline
+        ..color =
+            const Color(0xFF4A2E17) // Dark hemp outline
         ..style = PaintingStyle.stroke
         ..strokeWidth = 11
         ..strokeCap = StrokeCap.round
@@ -57,7 +59,8 @@ class MapPathPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = const Color(0xFFC68B45) // Natural golden hemp color
+        ..color =
+            const Color(0xFFC68B45) // Natural golden hemp color
         ..style = PaintingStyle.stroke
         ..strokeWidth = 7.5
         ..strokeCap = StrokeCap.round,
@@ -67,7 +70,8 @@ class MapPathPainter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = const Color(0xFFF3C77C) // Light golden straw highlight
+        ..color =
+            const Color(0xFFF3C77C) // Light golden straw highlight
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3.5
         ..strokeCap = StrokeCap.round,
@@ -102,13 +106,22 @@ class MapPathPainter extends CustomPainter {
           final twistY = math.sin(angle + math.pi / 4);
 
           // Draw dark groove line across the rope
-          final pStartDark = Offset(pos.dx - twistX * 4.5, pos.dy - twistY * 4.5);
+          final pStartDark = Offset(
+            pos.dx - twistX * 4.5,
+            pos.dy - twistY * 4.5,
+          );
           final pEndDark = Offset(pos.dx + twistX * 4.5, pos.dy + twistY * 4.5);
           canvas.drawLine(pStartDark, pEndDark, twistDarkPaint);
 
           // Offset highlight stitch for 3D braided look
-          final pStartHi = Offset(pos.dx - twistX * 3.0 + normalX * 1.2, pos.dy - twistY * 3.0 + normalY * 1.2);
-          final pEndHi = Offset(pos.dx + twistX * 2.0 + normalX * 1.2, pos.dy + twistY * 2.0 + normalY * 1.2);
+          final pStartHi = Offset(
+            pos.dx - twistX * 3.0 + normalX * 1.2,
+            pos.dy - twistY * 3.0 + normalY * 1.2,
+          );
+          final pEndHi = Offset(
+            pos.dx + twistX * 2.0 + normalX * 1.2,
+            pos.dy + twistY * 2.0 + normalY * 1.2,
+          );
           canvas.drawLine(pStartHi, pEndHi, twistHighlightPaint);
         }
         distance += step;

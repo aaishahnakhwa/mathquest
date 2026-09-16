@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/world_model.dart';
 import '../models/player_model.dart';
 import '../theme/colors.dart';
@@ -42,7 +43,9 @@ class WorldPreviewModal extends StatelessWidget {
   Widget build(BuildContext context) {
     final starsNeeded = world.reqStarsToUnlock;
     final currentStars = player.totalStars;
-    final progressRatio = starsNeeded > 0 ? (currentStars / starsNeeded).clamp(0.0, 1.0) : 1.0;
+    final progressRatio = starsNeeded > 0
+        ? (currentStars / starsNeeded).clamp(0.0, 1.0)
+        : 1.0;
 
     return Container(
       constraints: BoxConstraints(
@@ -97,7 +100,10 @@ class WorldPreviewModal extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
-                        child: Text(world.iconEmoji, style: const TextStyle(fontSize: 38)),
+                        child: Text(
+                          world.iconEmoji,
+                          style: const TextStyle(fontSize: 38),
+                        ),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -136,7 +142,10 @@ class WorldPreviewModal extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: isUnlocked
                               ? GameColors.freshGreen
@@ -350,7 +359,10 @@ class WorldPreviewModal extends StatelessWidget {
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: GameColors.skyBlueLight,
                                     borderRadius: BorderRadius.circular(8),
@@ -367,7 +379,10 @@ class WorldPreviewModal extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: GameColors.freshGreenLight,
                                     borderRadius: BorderRadius.circular(8),
@@ -396,9 +411,13 @@ class WorldPreviewModal extends StatelessWidget {
                             children: List.generate(3, (sIndex) {
                               final hasStar = sIndex < earnedStars;
                               return Icon(
-                                hasStar ? Icons.star_rounded : Icons.star_border_rounded,
+                                hasStar
+                                    ? Icons.star_rounded
+                                    : Icons.star_border_rounded,
                                 size: 18,
-                                color: hasStar ? GameColors.coinGold : Colors.grey.shade300,
+                                color: hasStar
+                                    ? GameColors.coinGold
+                                    : Colors.grey.shade300,
                               );
                             }),
                           ),

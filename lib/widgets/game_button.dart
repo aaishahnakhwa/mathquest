@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/colors.dart';
 
 class GameButton extends StatefulWidget {
@@ -51,9 +52,7 @@ class _GameButtonState extends State<GameButton> {
         height: widget.height,
         margin: EdgeInsets.only(top: topPadding, bottom: bottomPadding),
         decoration: BoxDecoration(
-          color: isEnabled
-              ? widget.backgroundColor
-              : const Color(0xFFD2E4DF),
+          color: isEnabled ? widget.backgroundColor : const Color(0xFFD2E4DF),
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
             color: isEnabled ? widget.shadowColor : const Color(0xFFB5C6C1),
@@ -107,7 +106,9 @@ class _GameButtonState extends State<GameButton> {
                         height: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(widget.textColor),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            widget.textColor,
+                          ),
                         ),
                       )
                     : Row(
@@ -124,7 +125,9 @@ class _GameButtonState extends State<GameButton> {
                               fontFamily: 'Fredoka',
                               fontSize: widget.fontSize,
                               fontWeight: FontWeight.bold,
-                              color: isEnabled ? widget.textColor : const Color(0xFF6A7B76),
+                              color: isEnabled
+                                  ? widget.textColor
+                                  : const Color(0xFF6A7B76),
                               letterSpacing: 0.6,
                               shadows: isEnabled
                                   ? const [

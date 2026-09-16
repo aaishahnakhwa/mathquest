@@ -14,6 +14,8 @@ import '../widgets/village_buildings_overlay.dart';
 import '../widgets/level_node_widget.dart';
 import '../widgets/game_button.dart';
 import '../widgets/world_three_lumina_field.dart';
+import '../widgets/world_two_icy_wind_overlay.dart';
+import '../widgets/world_two_snow_overlay.dart';
 import 'gameplay_screen.dart';
 import 'foundation_builder_screen.dart';
 
@@ -289,7 +291,7 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
 
   double _mapAspectForWorld(String worldId) {
     if (worldId == 'world_3') return 1676.0 / 941.0;
-    if (worldId == 'world_2') return 1024.0 / 576.0;
+    if (worldId == 'world_2') return 1672.0 / 941.0;
     return 1024.0 / 681.0;
   }
 
@@ -305,7 +307,7 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
     final String? bgAssetPath = world.id == 'world_1'
         ? 'assets/images/world_map_bg.jpg'
         : world.id == 'world_2'
-        ? 'assets/images/world_2_map_bg.jpg'
+        ? 'assets/images/world_2_map_bg.png'
         : world.id == 'world_3'
         ? 'assets/images/world_3_map_bg.png'
         : null;
@@ -324,28 +326,40 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
               containerWidth * 0.5058,
               totalHeight * 0.5704,
             ), // Level 12 (second-lowest pedestal)
+            Offset(
+              containerWidth * 0.4700,
+              totalHeight * 0.3735,
+            ), // Level 13 (middle pedestal)
+            Offset(
+              containerWidth * 0.4950,
+              totalHeight * 0.2050,
+            ), // Level 14 (second-highest pedestal)
+            Offset(
+              containerWidth * 0.4750,
+              totalHeight * 0.0805,
+            ), // Level 15 (highest pedestal)
           ]
         : world.id == 'world_2'
         ? [
             Offset(
-              containerWidth * 0.5022,
-              totalHeight * 0.8104,
+              containerWidth * 0.4378,
+              totalHeight * 0.7368,
             ), // Level 6 (Pedestal 1)
             Offset(
-              containerWidth * 0.4956,
-              totalHeight * 0.6264,
+              containerWidth * 0.5898,
+              totalHeight * 0.5455,
             ), // Level 7 (Pedestal 2)
             Offset(
-              containerWidth * 0.5391,
-              totalHeight * 0.4514,
+              containerWidth * 0.4729,
+              totalHeight * 0.3864,
             ), // Level 8 (Pedestal 3)
             Offset(
-              containerWidth * 0.5112,
-              totalHeight * 0.2747,
+              containerWidth * 0.5834,
+              totalHeight * 0.2398,
             ), // Level 9 (Pedestal 4)
             Offset(
-              containerWidth * 0.5215,
-              totalHeight * 0.1387,
+              containerWidth * 0.5505,
+              totalHeight * 0.1214,
             ), // Level 10 (Pedestal 5)
           ]
         : [
@@ -417,6 +431,18 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                 mapHeight: totalHeight,
               ),
             ),
+          if (world.id == 'world_2')
+            Positioned.fill(
+              child: WorldTwoIcyWindOverlay(
+                animation: _cloudAnimationController,
+                mapWidth: containerWidth,
+                mapHeight: totalHeight,
+              ),
+            ),
+          if (world.id == 'world_2')
+            Positioned.fill(
+              child: WorldTwoSnowOverlay(animation: _cloudAnimationController),
+            ),
           if (world.id == 'world_1')
             Positioned.fill(
               child: AmbientLeafField(
@@ -463,8 +489,10 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
               ),
             ),
 
-          // 2. DYNAMIC VILLAGE BUILDINGS OVERLAY (ONLY FOR WORLD 1)
-          if (world.id == 'world_1')
+          // Each supported world adds completed buildings to its plots.
+          if (world.id == 'world_1' ||
+              world.id == 'world_2' ||
+              world.id == 'world_3')
             Positioned.fill(
               child: VillageBuildingsOverlay(
                 worldId: world.id,
@@ -511,7 +539,9 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                   earnedStars,
                 ),
                 onBuildTap:
-                    (world.id == 'world_1' && isCompleted && !isHouseBuilt)
+                    (provider.supportsLevelBuilding(level) &&
+                        isCompleted &&
+                        !isHouseBuilt)
                     ? () {
                         Navigator.push(
                           context,
@@ -685,7 +715,7 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                 }),
               ),
               const SizedBox(height: 20),
-              if (level.worldId == 'world_1' &&
+              if (provider.supportsLevelBuilding(level) &&
                   provider.player.completedLevelIds.contains(level.id)) ...[
                 Builder(
                   builder: (context) {
@@ -694,7 +724,7 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                     if (!isHouseBuilt) {
                       return GameButton(
                         text: houseStage == 0
-                            ? 'BUILD HOUSE 🛠️'
+                            ? 'BUILD NEW BUILDING 🛠️'
                             : 'CONTINUE BUILD $houseStage/${GameProvider.levelHouseFinalStage}',
                         icon: Image.asset(
                           'assets/images/wood_log.png',
@@ -732,7 +762,7 @@ class _AdventureMapScreenState extends State<AdventureMapScreen>
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'HOUSE STAGE COMPLETED ✅',
+                              'NEW BUILDING COMPLETED ✅',
                               style: TextStyle(
                                 fontFamily: 'Fredoka',
                                 fontSize: 14,

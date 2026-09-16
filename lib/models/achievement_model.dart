@@ -23,10 +23,7 @@ class AchievementModel {
 
   bool get isCompleted => currentProgress >= requiredProgress;
 
-  AchievementModel copyWith({
-    double? currentProgress,
-    bool? isClaimed,
-  }) {
+  AchievementModel copyWith({double? currentProgress, bool? isClaimed}) {
     return AchievementModel(
       id: id,
       title: title,

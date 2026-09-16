@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/game_provider.dart';
 import '../models/monster_model.dart';
 import '../theme/colors.dart';
@@ -20,6 +22,8 @@ class GameplayScreen extends StatefulWidget {
 class _GameplayScreenState extends State<GameplayScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _bgAnimController;
+  bool _isOpeningResults = false;
+  bool _isOutOfHeartsDialogOpen = false;
 
   @override
   void initState() {
@@ -56,8 +60,10 @@ class _GameplayScreenState extends State<GameplayScreen>
         final monster = MonsterModel.getForWorld(level.worldId);
 
         // Auto trigger Level Complete screen if finished
-        if (provider.isLevelCompleted) {
+        if (provider.isLevelCompleted && !_isOpeningResults) {
+          _isOpeningResults = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -68,9 +74,14 @@ class _GameplayScreenState extends State<GameplayScreen>
         }
 
         // Out of Hearts Game Over Modal
-        if (provider.levelHeartsLeft <= 0) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _showOutOfHeartsDialog(context, provider);
+        if (provider.levelHeartsLeft <= 0 && !_isOutOfHeartsDialogOpen) {
+          _isOutOfHeartsDialogOpen = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            if (!mounted) return;
+            await _showOutOfHeartsDialog(context, provider);
+            if (mounted) {
+              setState(() => _isOutOfHeartsDialogOpen = false);
+            }
           });
         }
 
@@ -112,7 +123,10 @@ class _GameplayScreenState extends State<GameplayScreen>
                   children: [
                     // Top Gamified HUD Header: Back Button, Gems Counter, Progress Pill & Hearts
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.95),
                         boxShadow: [
@@ -123,27 +137,43 @@ class _GameplayScreenState extends State<GameplayScreen>
                           ),
                         ],
                         border: const Border(
-                          bottom: BorderSide(color: GameColors.cardBorder, width: 2),
+                          bottom: BorderSide(
+                            color: GameColors.cardBorder,
+                            width: 2,
+                          ),
                         ),
                       ),
                       child: Row(
                         children: [
                           // 3D Pixel Back Button (<)
                           GestureDetector(
-                            onTap: () => Navigator.pop(context),
+                            onTap: () {
+                              provider.endTestSession();
+                              Navigator.pop(context);
+                            },
                             child: Container(
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFF38BDF8), width: 2.5),
+                                border: Border.all(
+                                  color: const Color(0xFF38BDF8),
+                                  width: 2.5,
+                                ),
                                 boxShadow: const [
-                                  BoxShadow(color: Color(0xFF0284C7), offset: Offset(0, 3)),
+                                  BoxShadow(
+                                    color: Color(0xFF0284C7),
+                                    offset: Offset(0, 3),
+                                  ),
                                 ],
                               ),
                               child: const Center(
-                                child: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Color(0xFF0284C7)),
+                                child: Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  size: 18,
+                                  color: Color(0xFF0284C7),
+                                ),
                               ),
                             ),
                           ),
@@ -151,19 +181,31 @@ class _GameplayScreenState extends State<GameplayScreen>
 
                           // Live Gems Balance Counter
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: GameColors.gemPurple, width: 2.5),
+                              border: Border.all(
+                                color: GameColors.gemPurple,
+                                width: 2.5,
+                              ),
                               boxShadow: const [
-                                BoxShadow(color: GameColors.jellyPurpleDark, offset: Offset(0, 2.5)),
+                                BoxShadow(
+                                  color: GameColors.jellyPurpleDark,
+                                  offset: Offset(0, 2.5),
+                                ),
                               ],
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Text('💎 ', style: TextStyle(fontSize: 13)),
+                                const Text(
+                                  '💎 ',
+                                  style: TextStyle(fontSize: 13),
+                                ),
                                 Text(
                                   '${player.gems}',
                                   style: const TextStyle(
@@ -181,21 +223,30 @@ class _GameplayScreenState extends State<GameplayScreen>
                           // Progress Bar & Level Title Pill
                           Expanded(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.8),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                                border: Border.all(
+                                  color: Colors.grey.shade300,
+                                  width: 1.5,
+                                ),
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Flexible(
                                         child: Text(
-                                          level.title,
+                                          provider.isTestMode
+                                              ? 'TEST · ${level.title}'
+                                              : level.title,
                                           overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
                                             fontFamily: 'Fredoka',
@@ -222,13 +273,17 @@ class _GameplayScreenState extends State<GameplayScreen>
                                     borderRadius: BorderRadius.circular(6),
                                     child: Stack(
                                       children: [
-                                        Container(height: 7, color: Colors.grey.shade300),
+                                        Container(
+                                          height: 7,
+                                          color: Colors.grey.shade300,
+                                        ),
                                         FractionallySizedBox(
                                           widthFactor: progressRatio,
                                           child: Container(
                                             height: 7,
                                             decoration: const BoxDecoration(
-                                              gradient: GameColors.greenGradient,
+                                              gradient:
+                                                  GameColors.greenGradient,
                                             ),
                                           ),
                                         ),
@@ -246,7 +301,9 @@ class _GameplayScreenState extends State<GameplayScreen>
                             children: List.generate(3, (index) {
                               final hasHeart = index < provider.levelHeartsLeft;
                               return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 1.0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 1.0,
+                                ),
                                 child: Text(
                                   hasHeart ? '❤️' : '🖤',
                                   style: const TextStyle(fontSize: 15),
@@ -263,10 +320,12 @@ class _GameplayScreenState extends State<GameplayScreen>
                               width: 32,
                               height: 32,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF6C5CE7).withValues(alpha: 0.12),
+                                color: const Color(0xFF6C5CE7)
+                                    .withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: const Color(0xFF6C5CE7).withValues(alpha: 0.5),
+                                  color: const Color(0xFF6C5CE7)
+                                      .withValues(alpha: 0.5),
                                   width: 1.5,
                                 ),
                               ),
@@ -286,12 +345,16 @@ class _GameplayScreenState extends State<GameplayScreen>
                     // Main Gameplay Body
                     Expanded(
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         child: Column(
                           children: [
                             // 2D MATH BATTLE ARENA (HERO VS MONSTER FOE)
                             RepaintBoundary(
                               child: BattleArenaWidget(
+                                worldId: level.worldId,
                                 player: player,
                                 monster: monster,
                                 isSubmitted: provider.isAnswerSubmitted,
@@ -311,7 +374,10 @@ class _GameplayScreenState extends State<GameplayScreen>
                                 Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: const Color(0xFF0284C7), width: 2),
+                                    border: Border.all(
+                                      color: const Color(0xFF0284C7),
+                                      width: 2,
+                                    ),
                                     boxShadow: const [
                                       BoxShadow(
                                         color: Color(0xFF0369A1),
@@ -349,18 +415,28 @@ class _GameplayScreenState extends State<GameplayScreen>
                                                 begin: Alignment.topCenter,
                                                 end: Alignment.bottomCenter,
                                                 colors: [
-                                                  Colors.white.withValues(alpha: 0.75),
-                                                  Colors.white.withValues(alpha: 0.0),
+                                                  Colors.white.withValues(
+                                                    alpha: 0.75,
+                                                  ),
+                                                  Colors.white.withValues(
+                                                    alpha: 0.0,
+                                                  ),
                                                 ],
                                               ),
                                             ),
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
                                           child: Row(
                                             children: [
-                                              const Text('⚔️ ', style: TextStyle(fontSize: 12)),
+                                              const Text(
+                                                '⚔️ ',
+                                                style: TextStyle(fontSize: 12),
+                                              ),
                                               Text(
                                                 question.topic,
                                                 style: const TextStyle(
@@ -380,11 +456,15 @@ class _GameplayScreenState extends State<GameplayScreen>
 
                                 // Glossy Purple Hint Button
                                 GestureDetector(
-                                  onTap: () => _handleHintTap(context, provider),
+                                  onTap: () =>
+                                      _handleHintTap(context, provider),
                                   child: Container(
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(color: const Color(0xFF9333EA), width: 2),
+                                      border: Border.all(
+                                        color: const Color(0xFF9333EA),
+                                        width: 2,
+                                      ),
                                       boxShadow: const [
                                         BoxShadow(
                                           color: Color(0xFF7E22CE),
@@ -422,31 +502,42 @@ class _GameplayScreenState extends State<GameplayScreen>
                                                   begin: Alignment.topCenter,
                                                   end: Alignment.bottomCenter,
                                                   colors: [
-                                                    Colors.white.withValues(alpha: 0.75),
-                                                    Colors.white.withValues(alpha: 0.0),
+                                                    Colors.white.withValues(
+                                                      alpha: 0.75,
+                                                    ),
+                                                    Colors.white.withValues(
+                                                      alpha: 0.0,
+                                                    ),
                                                   ],
                                                 ),
                                               ),
                                             ),
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 6,
+                                            ),
                                             child: const Row(
                                               children: [
-                                                Text('💡 Hint ',
-                                                    style: TextStyle(
-                                                      fontFamily: 'Fredoka',
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Color(0xFF6B21A8),
-                                                    )),
-                                                Text('💎 3',
-                                                    style: TextStyle(
-                                                      fontFamily: 'Fredoka',
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Color(0xFF6B21A8),
-                                                    )),
+                                                Text(
+                                                  '💡 Hint ',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Fredoka',
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Color(0xFF6B21A8),
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '💎 3',
+                                                  style: TextStyle(
+                                                    fontFamily: 'Fredoka',
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Color(0xFF6B21A8),
+                                                  ),
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -463,89 +554,97 @@ class _GameplayScreenState extends State<GameplayScreen>
                             RepaintBoundary(
                               child: Container(
                                 width: double.infinity,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(22),
-                                border: Border.all(color: const Color(0xFFF59E0B), width: 3.5),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0xFFD97706),
-                                    offset: Offset(0, 5),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(22),
+                                  border: Border.all(
+                                    color: const Color(0xFFF59E0B),
+                                    width: 3.5,
                                   ),
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 10,
-                                    offset: Offset(0, 6),
-                                  ),
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(18.5),
-                                child: Stack(
-                                  children: [
-                                    // Glossy Warm Yellow Gradient Background
-                                    Positioned.fill(
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              Color(0xFFFFFDF5),
-                                              Color(0xFFFFFBEB),
-                                              Color(0xFFFEF3C7),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0xFFD97706),
+                                      offset: Offset(0, 5),
                                     ),
-                                    // Top White Glass Highlight Sheen
-                                    Positioned(
-                                      top: 0,
-                                      left: 0,
-                                      right: 0,
-                                      height: 35,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              Colors.white.withValues(alpha: 0.8),
-                                              Colors.white.withValues(alpha: 0.0),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    // Card Content
-                                    Padding(
-                                      padding: const EdgeInsets.all(16),
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            question.questionText,
-                                            style: const TextStyle(
-                                              fontFamily: 'Fredoka',
-                                              fontSize: 26,
-                                              fontWeight: FontWeight.bold,
-                                              color: GameColors.navyText,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          const SizedBox(height: 12),
-
-                                          // VISUAL MATH HELPER (BASE-10 3D BLOCKS)
-                                          VisualMathHelper(
-                                            questionText: question.questionText,
-                                            topic: question.topic,
-                                          ),
-                                        ],
-                                      ),
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 10,
+                                      offset: Offset(0, 6),
                                     ),
                                   ],
                                 ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(18.5),
+                                  child: Stack(
+                                    children: [
+                                      // Glossy Warm Yellow Gradient Background
+                                      Positioned.fill(
+                                        child: Container(
+                                          decoration: const BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                Color(0xFFFFFDF5),
+                                                Color(0xFFFFFBEB),
+                                                Color(0xFFFEF3C7),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Top White Glass Highlight Sheen
+                                      Positioned(
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        height: 35,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                Colors.white.withValues(
+                                                  alpha: 0.8,
+                                                ),
+                                                Colors.white.withValues(
+                                                  alpha: 0.0,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Card Content
+                                      Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                          children: [
+                                            Text(
+                                              question.questionText,
+                                              style: const TextStyle(
+                                                fontFamily: 'Fredoka',
+                                                fontSize: 26,
+                                                fontWeight: FontWeight.bold,
+                                                color: GameColors.navyText,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            const SizedBox(height: 12),
+
+                                            // VISUAL MATH HELPER (BASE-10 3D BLOCKS)
+                                            VisualMathHelper(
+                                              questionText:
+                                                  question.questionText,
+                                              topic: question.topic,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ),
                             ),
                             const SizedBox(height: 14),
 
@@ -555,198 +654,278 @@ class _GameplayScreenState extends State<GameplayScreen>
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: question.options.length,
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  childAspectRatio: 2.2,
-                                  mainAxisSpacing: 10,
-                                  crossAxisSpacing: 10,
-                                ),
-                              itemBuilder: (context, index) {
-                                final optionText = question.options[index];
-                                final isSelected = provider.selectedAnswerIndex == index;
-                                final isSubmitted = provider.isAnswerSubmitted;
-                                final isCorrect = index == question.correctAnswerIndex;
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      childAspectRatio: 2.2,
+                                      mainAxisSpacing: 10,
+                                      crossAxisSpacing: 10,
+                                    ),
+                                itemBuilder: (context, index) {
+                                  final optionText = question.options[index];
+                                  final isSelected =
+                                      provider.selectedAnswerIndex == index;
+                                  final isSubmitted =
+                                      provider.isAnswerSubmitted;
+                                  final isCorrect =
+                                      index == question.correctAnswerIndex;
 
-                                // Bright vibrant option gradient themes (Blue, Green, Purple, Red)
-                                final optionGradients = [
-                                  // A - Blue Glossy
-                                  const [Color(0xFFEFF6FF), Color(0xFFDBEAFE), Color(0xFFBFDBFE)],
-                                  // B - Green Glossy
-                                  const [Color(0xFFF0FDF4), Color(0xFFDCFCE7), Color(0xFFBBF7D0)],
-                                  // C - Purple Glossy
-                                  const [Color(0xFFFAF5FF), Color(0xFFF3E8FF), Color(0xFFE9D5FF)],
-                                  // D - Coral Red Glossy
-                                  const [Color(0xFFFFF1F2), Color(0xFFFFE4E6), Color(0xFFFECDD3)],
-                                ];
-                                final optionBorders = [
-                                  const Color(0xFF3B82F6), // Blue
-                                  const Color(0xFF22C55E), // Green
-                                  const Color(0xFFA855F7), // Purple
-                                  const Color(0xFFF43F5E), // Red
-                                ];
-                                final optionShadows = [
-                                  const Color(0xFF1D4ED8),
-                                  const Color(0xFF15803D),
-                                  const Color(0xFF7E22CE),
-                                  const Color(0xFFBE123C),
-                                ];
-                                final badgeColors = [
-                                  const Color(0xFF2563EB),
-                                  const Color(0xFF16A34A),
-                                  const Color(0xFF9333EA),
-                                  const Color(0xFFE11D48),
-                                ];
+                                  // Bright vibrant option gradient themes (Blue, Green, Purple, Red)
+                                  final optionGradients = [
+                                    // A - Blue Glossy
+                                    const [
+                                      Color(0xFFEFF6FF),
+                                      Color(0xFFDBEAFE),
+                                      Color(0xFFBFDBFE),
+                                    ],
+                                    // B - Green Glossy
+                                    const [
+                                      Color(0xFFF0FDF4),
+                                      Color(0xFFDCFCE7),
+                                      Color(0xFFBBF7D0),
+                                    ],
+                                    // C - Purple Glossy
+                                    const [
+                                      Color(0xFFFAF5FF),
+                                      Color(0xFFF3E8FF),
+                                      Color(0xFFE9D5FF),
+                                    ],
+                                    // D - Coral Red Glossy
+                                    const [
+                                      Color(0xFFFFF1F2),
+                                      Color(0xFFFFE4E6),
+                                      Color(0xFFFECDD3),
+                                    ],
+                                  ];
+                                  final optionBorders = [
+                                    const Color(0xFF3B82F6), // Blue
+                                    const Color(0xFF22C55E), // Green
+                                    const Color(0xFFA855F7), // Purple
+                                    const Color(0xFFF43F5E), // Red
+                                  ];
+                                  final optionShadows = [
+                                    const Color(0xFF1D4ED8),
+                                    const Color(0xFF15803D),
+                                    const Color(0xFF7E22CE),
+                                    const Color(0xFFBE123C),
+                                  ];
+                                  final badgeColors = [
+                                    const Color(0xFF2563EB),
+                                    const Color(0xFF16A34A),
+                                    const Color(0xFF9333EA),
+                                    const Color(0xFFE11D48),
+                                  ];
 
-                                List<Color> cardGradient = optionGradients[index % 4];
-                                Color cardBorder = optionBorders[index % 4];
-                                Color shadowColor = optionShadows[index % 4];
-                                Color badgeColor = badgeColors[index % 4];
-                                Color textColor = GameColors.navyText;
+                                  List<Color> cardGradient =
+                                      optionGradients[index % 4];
+                                  Color cardBorder = optionBorders[index % 4];
+                                  Color shadowColor = optionShadows[index % 4];
+                                  Color badgeColor = badgeColors[index % 4];
+                                  Color textColor = GameColors.navyText;
 
-                                if (isSubmitted) {
-                                  if (isCorrect) {
-                                    cardGradient = const [Color(0xFF4ADE80), Color(0xFF22C55E), Color(0xFF16A34A)];
-                                    cardBorder = const Color(0xFF15803D);
-                                    shadowColor = const Color(0xFF14532D);
-                                    textColor = Colors.white;
+                                  if (isSubmitted) {
+                                    if (isCorrect) {
+                                      cardGradient = const [
+                                        Color(0xFF4ADE80),
+                                        Color(0xFF22C55E),
+                                        Color(0xFF16A34A),
+                                      ];
+                                      cardBorder = const Color(0xFF15803D);
+                                      shadowColor = const Color(0xFF14532D);
+                                      textColor = Colors.white;
+                                    } else if (isSelected) {
+                                      cardGradient = const [
+                                        Color(0xFFFB7185),
+                                        Color(0xFFF43F5E),
+                                        Color(0xFFE11D48),
+                                      ];
+                                      cardBorder = const Color(0xFFBE123C);
+                                      shadowColor = const Color(0xFF881337);
+                                      textColor = Colors.white;
+                                    }
                                   } else if (isSelected) {
-                                    cardGradient = const [Color(0xFFFB7185), Color(0xFFF43F5E), Color(0xFFE11D48)];
-                                    cardBorder = const Color(0xFFBE123C);
-                                    shadowColor = const Color(0xFF881337);
+                                    cardGradient = const [
+                                      Color(0xFF38BDF8),
+                                      Color(0xFF0284C7),
+                                      Color(0xFF0369A1),
+                                    ];
+                                    cardBorder = const Color(0xFF075985);
+                                    shadowColor = const Color(0xFF0C4A6E);
                                     textColor = Colors.white;
                                   }
-                                } else if (isSelected) {
-                                  cardGradient = const [Color(0xFF38BDF8), Color(0xFF0284C7), Color(0xFF0369A1)];
-                                  cardBorder = const Color(0xFF075985);
-                                  shadowColor = const Color(0xFF0C4A6E);
-                                  textColor = Colors.white;
-                                }
 
-                                return GestureDetector(
-                                  onTap: () => provider.selectAnswer(index),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(18),
-                                      border: Border.all(color: cardBorder, width: 2.5),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: shadowColor.withValues(alpha: 0.6),
-                                          offset: const Offset(0, 4),
+                                  return GestureDetector(
+                                    onTap: () => provider.selectAnswer(index),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(18),
+                                        border: Border.all(
+                                          color: cardBorder,
+                                          width: 2.5,
                                         ),
-                                      ],
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(15.5),
-                                      child: Stack(
-                                        children: [
-                                          // Card Glossy Gradient Background
-                                          Positioned.fill(
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  begin: Alignment.topCenter,
-                                                  end: Alignment.bottomCenter,
-                                                  colors: cardGradient,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: shadowColor.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                          15.5,
+                                        ),
+                                        child: Stack(
+                                          children: [
+                                            // Card Glossy Gradient Background
+                                            Positioned.fill(
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.topCenter,
+                                                    end: Alignment.bottomCenter,
+                                                    colors: cardGradient,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                          // Top White Glass Highlight Sheen
-                                          Positioned(
-                                            top: 0,
-                                            left: 0,
-                                            right: 0,
-                                            height: 18,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                gradient: LinearGradient(
-                                                  begin: Alignment.topCenter,
-                                                  end: Alignment.bottomCenter,
-                                                  colors: [
-                                                    Colors.white.withValues(alpha: isSelected || (isSubmitted && (isCorrect || isSelected)) ? 0.45 : 0.75),
-                                                    Colors.white.withValues(alpha: 0.0),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          // Card Body
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                            child: Row(
-                                              children: [
-                                                // 3D Letter Badge
-                                                Container(
-                                                  width: 32,
-                                                  height: 32,
-                                                  decoration: BoxDecoration(
-                                                    color: (isSelected || (isSubmitted && (isCorrect || isSelected))) ? Colors.white.withValues(alpha: 0.3) : badgeColor,
-                                                    borderRadius: BorderRadius.circular(9),
-                                                    boxShadow: const [
-                                                      BoxShadow(
-                                                        color: Colors.black26,
-                                                        offset: Offset(0, 2),
+                                            // Top White Glass Highlight Sheen
+                                            Positioned(
+                                              top: 0,
+                                              left: 0,
+                                              right: 0,
+                                              height: 18,
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin: Alignment.topCenter,
+                                                    end: Alignment.bottomCenter,
+                                                    colors: [
+                                                      Colors.white.withValues(
+                                                        alpha:
+                                                            isSelected ||
+                                                                (isSubmitted &&
+                                                                    (isCorrect ||
+                                                                        isSelected))
+                                                            ? 0.45
+                                                            : 0.75,
+                                                      ),
+                                                      Colors.white.withValues(
+                                                        alpha: 0.0,
                                                       ),
                                                     ],
                                                   ),
-                                                  child: Center(
-                                                    child: Text(
-                                                      String.fromCharCode(65 + index),
-                                                      style: const TextStyle(
-                                                        fontFamily: 'Fredoka',
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 12),
-                                                Expanded(
-                                                  child: Text(
-                                                    optionText,
-                                                    style: TextStyle(
-                                                      fontFamily: 'Fredoka',
-                                                      fontSize: 22,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: textColor,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-
-                                          // Correct Checkmark Badge (Top-Right)
-                                          if (isSubmitted && isCorrect)
-                                            Positioned(
-                                              top: 4,
-                                              right: 4,
-                                              child: Container(
-                                                padding: const EdgeInsets.all(3),
-                                                decoration: BoxDecoration(
-                                                  color: const Color(0xFF14532D),
-                                                  borderRadius: BorderRadius.circular(6),
-                                                  boxShadow: const [
-                                                    BoxShadow(color: Colors.black26, offset: Offset(0, 1.5)),
-                                                  ],
-                                                ),
-                                                child: const Icon(
-                                                  Icons.check_rounded,
-                                                  size: 14,
-                                                  color: Colors.white,
                                                 ),
                                               ),
                                             ),
-                                        ],
+                                            // Card Body
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 8,
+                                                  ),
+                                              child: Row(
+                                                children: [
+                                                  // 3D Letter Badge
+                                                  Container(
+                                                    width: 32,
+                                                    height: 32,
+                                                    decoration: BoxDecoration(
+                                                      color:
+                                                          (isSelected ||
+                                                              (isSubmitted &&
+                                                                  (isCorrect ||
+                                                                      isSelected)))
+                                                          ? Colors.white
+                                                                .withValues(
+                                                                  alpha: 0.3,
+                                                                )
+                                                          : badgeColor,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            9,
+                                                          ),
+                                                      boxShadow: const [
+                                                        BoxShadow(
+                                                          color: Colors.black26,
+                                                          offset: Offset(0, 2),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                        String.fromCharCode(
+                                                          65 + index,
+                                                        ),
+                                                        style: const TextStyle(
+                                                          fontFamily: 'Fredoka',
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(
+                                                    child: Text(
+                                                      optionText,
+                                                      style: TextStyle(
+                                                        fontFamily: 'Fredoka',
+                                                        fontSize: 22,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: textColor,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+
+                                            // Correct Checkmark Badge (Top-Right)
+                                            if (isSubmitted && isCorrect)
+                                              Positioned(
+                                                top: 4,
+                                                right: 4,
+                                                child: Container(
+                                                  padding: const EdgeInsets.all(
+                                                    3,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(
+                                                      0xFF14532D,
+                                                    ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          6,
+                                                        ),
+                                                    boxShadow: const [
+                                                      BoxShadow(
+                                                        color: Colors.black26,
+                                                        offset: Offset(0, 1.5),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: const Icon(
+                                                    Icons.check_rounded,
+                                                    size: 14,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                );
-                               },
-                             ),
-                             ),
-                             const SizedBox(height: 16),
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 16),
 
                             // BOTTOM ACTION BUTTON
                             GameButton(
@@ -756,7 +935,9 @@ class _GameplayScreenState extends State<GameplayScreen>
                               backgroundColor: GameColors.sunnyYellow,
                               shadowColor: GameColors.yellowDark,
                               textColor: GameColors.navyText,
-                              onPressed: (!provider.isAnswerSubmitted && provider.selectedAnswerIndex != null)
+                              onPressed:
+                                  (!provider.isAnswerSubmitted &&
+                                      provider.selectedAnswerIndex != null)
                                   ? () => _handleSubmitAnswer(provider)
                                   : null,
                               height: 52,
@@ -782,6 +963,13 @@ class _GameplayScreenState extends State<GameplayScreen>
 
     final currentQIndex = provider.currentQuestionIndex;
     provider.submitAnswer();
+    if (provider.player.isHapticsEnabled) {
+      if (provider.isCorrectAnswer) {
+        HapticFeedback.mediumImpact();
+      } else {
+        HapticFeedback.heavyImpact();
+      }
+    }
 
     // Automatically transition to next question after attack animation completes
     Future.delayed(const Duration(milliseconds: 1400), () {
@@ -795,7 +983,7 @@ class _GameplayScreenState extends State<GameplayScreen>
 
         if (provider.isCorrectAnswer) {
           provider.nextQuestion();
-        } else {
+        } else if (provider.player.autoShowExplanations) {
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -807,6 +995,8 @@ class _GameplayScreenState extends State<GameplayScreen>
               },
             ),
           );
+        } else {
+          provider.nextQuestion();
         }
       }
     });
@@ -815,10 +1005,17 @@ class _GameplayScreenState extends State<GameplayScreen>
   void _handleHintTap(BuildContext context, GameProvider provider) {
     final currentGems = provider.player.gems;
 
+    if (provider.isTestMode) {
+      _executeHintUse(context, provider);
+      return;
+    }
+
     if (currentGems < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('💎 Need 3 Gems for a hint! Solve levels to earn more.'),
+          content: Text(
+            '💎 Need 3 Gems for a hint! Solve levels to earn more.',
+          ),
           backgroundColor: GameColors.coralDark,
         ),
       );
@@ -834,14 +1031,19 @@ class _GameplayScreenState extends State<GameplayScreen>
         backgroundColor: GameColors.surfaceWarm,
         title: Row(
           children: [
-            Text(isExhausting ? '⚠️ ' : '💎 ', style: const TextStyle(fontSize: 22)),
+            Text(
+              isExhausting ? '⚠️ ' : '💎 ',
+              style: const TextStyle(fontSize: 22),
+            ),
             Text(
               isExhausting ? 'GEM EXHAUSTION WARNING' : 'CONFIRM HINT',
               style: TextStyle(
                 fontFamily: 'Fredoka',
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: isExhausting ? GameColors.coralDark : GameColors.navyText,
+                color: isExhausting
+                    ? GameColors.coralDark
+                    : GameColors.navyText,
               ),
             ),
           ],
@@ -883,7 +1085,9 @@ class _GameplayScreenState extends State<GameplayScreen>
                       fontFamily: 'Fredoka',
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isExhausting ? GameColors.coralDark : GameColors.gemPurple,
+                      color: isExhausting
+                          ? GameColors.coralDark
+                          : GameColors.gemPurple,
                     ),
                   ),
                 ],
@@ -894,17 +1098,23 @@ class _GameplayScreenState extends State<GameplayScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL',
-                style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  fontWeight: FontWeight.bold,
-                  color: GameColors.navyTextSecondary,
-                )),
+            child: const Text(
+              'CANCEL',
+              style: TextStyle(
+                fontFamily: 'Fredoka',
+                fontWeight: FontWeight.bold,
+                color: GameColors.navyTextSecondary,
+              ),
+            ),
           ),
           GameButton(
             text: 'CONFIRM (💎 3)',
-            backgroundColor: isExhausting ? GameColors.coral : GameColors.gemPurple,
-            shadowColor: isExhausting ? GameColors.coralDark : GameColors.gemPurple,
+            backgroundColor: isExhausting
+                ? GameColors.coral
+                : GameColors.gemPurple,
+            shadowColor: isExhausting
+                ? GameColors.coralDark
+                : GameColors.gemPurple,
             textColor: Colors.white,
             height: 40,
             fontSize: 12,
@@ -923,7 +1133,11 @@ class _GameplayScreenState extends State<GameplayScreen>
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('💎 Spent 3 Gems! ${provider.player.gems} Gems remaining.'),
+          content: Text(
+            provider.isTestMode
+                ? 'TEST MODE: Hint opened without spending Gems.'
+                : '💎 Spent 3 Gems! ${provider.player.gems} Gems remaining.',
+          ),
           backgroundColor: GameColors.gemPurple,
           duration: const Duration(seconds: 2),
         ),
@@ -932,16 +1146,20 @@ class _GameplayScreenState extends State<GameplayScreen>
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           title: const Row(
             children: [
               Text('💡 ', style: TextStyle(fontSize: 22)),
-              Text('QUESTION HINT',
-                  style: TextStyle(
-                    fontFamily: 'Fredoka',
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  )),
+              Text(
+                'QUESTION HINT',
+                style: TextStyle(
+                  fontFamily: 'Fredoka',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           content: Text(
@@ -955,11 +1173,13 @@ class _GameplayScreenState extends State<GameplayScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('GOT IT',
-                  style: TextStyle(
-                    fontFamily: 'Fredoka',
-                    fontWeight: FontWeight.bold,
-                  )),
+              child: const Text(
+                'GOT IT',
+                style: TextStyle(
+                  fontFamily: 'Fredoka',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
@@ -967,8 +1187,11 @@ class _GameplayScreenState extends State<GameplayScreen>
     }
   }
 
-  void _showOutOfHeartsDialog(BuildContext context, GameProvider provider) {
-    showDialog(
+  Future<void> _showOutOfHeartsDialog(
+    BuildContext context,
+    GameProvider provider,
+  ) async {
+    await showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
@@ -976,18 +1199,22 @@ class _GameplayScreenState extends State<GameplayScreen>
         title: const Row(
           children: [
             Text('💔 ', style: TextStyle(fontSize: 24)),
-            Text('OUT OF HEARTS!',
-                style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: GameColors.coralDark,
-                )),
+            Text(
+              'OUT OF HEARTS!',
+              style: TextStyle(
+                fontFamily: 'Fredoka',
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: GameColors.coralDark,
+              ),
+            ),
           ],
         ),
-        content: const Text(
-          'You ran out of hearts for this level! Would you like to revive with 5 Gems or retry?',
-          style: TextStyle(
+        content: Text(
+          provider.isTestMode
+              ? 'You ran out of test hearts. Revive is free in Test Mode, or retry the level.'
+              : 'You ran out of hearts for this level! Would you like to revive with 5 Gems or retry?',
+          style: const TextStyle(
             fontFamily: 'Nunito',
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -998,18 +1225,20 @@ class _GameplayScreenState extends State<GameplayScreen>
             onPressed: () {
               Navigator.pop(context);
               if (provider.activeLevel != null) {
-                provider.startLevel(provider.activeLevel!);
+                provider.restartActiveLevel();
               }
             },
-            child: const Text('RETRY LEVEL',
-                style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  fontWeight: FontWeight.bold,
-                  color: GameColors.navyTextSecondary,
-                )),
+            child: const Text(
+              'RETRY LEVEL',
+              style: TextStyle(
+                fontFamily: 'Fredoka',
+                fontWeight: FontWeight.bold,
+                color: GameColors.navyTextSecondary,
+              ),
+            ),
           ),
           GameButton(
-            text: 'REVIVE (💎 5)',
+            text: provider.isTestMode ? 'REVIVE FREE' : 'REVIVE (💎 5)',
             backgroundColor: GameColors.freshGreen,
             shadowColor: GameColors.freshGreenDark,
             textColor: Colors.white,
@@ -1017,6 +1246,7 @@ class _GameplayScreenState extends State<GameplayScreen>
             fontSize: 13,
             onPressed: () {
               if (provider.reviveLevelWithGems()) {
+                provider.nextQuestion();
                 Navigator.pop(context);
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1057,8 +1287,18 @@ class _GameplayBgPainter extends CustomPainter {
     // Distant Rolling Meadow Hills
     final hillPath = Path()
       ..moveTo(0, size.height * 0.88)
-      ..quadraticBezierTo(size.width * 0.35, size.height * 0.82, size.width * 0.7, size.height * 0.89)
-      ..quadraticBezierTo(size.width * 0.9, size.height * 0.92, size.width, size.height * 0.86)
+      ..quadraticBezierTo(
+        size.width * 0.35,
+        size.height * 0.82,
+        size.width * 0.7,
+        size.height * 0.89,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.9,
+        size.height * 0.92,
+        size.width,
+        size.height * 0.86,
+      )
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();

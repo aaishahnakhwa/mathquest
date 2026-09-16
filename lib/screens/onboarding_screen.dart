@@ -5,6 +5,7 @@ import '../providers/game_provider.dart';
 import '../theme/colors.dart';
 import '../widgets/game_button.dart';
 import '../widgets/avatar_widget.dart';
+import '../widgets/cheat_code_access_button.dart';
 import 'main_shell_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -17,7 +18,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   int _step = 0;
   final _nameController = TextEditingController(text: 'Math Hero');
-  String _selectedAvatarId = 'hero_wizard';
+  String _selectedAvatarId = AvatarWidget.maleWizardId;
 
   @override
   void dispose() {
@@ -25,17 +26,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.dispose();
   }
 
-  void _nextStep() {
+  Future<void> _nextStep() async {
     if (_step < 2) {
       setState(() => _step++);
     } else {
       final provider = Provider.of<GameProvider>(context, listen: false);
-      provider.updatePlayerAvatar(
+      await provider.updatePlayerAvatar(
         name: _nameController.text.trim().isEmpty
             ? 'Math Hero'
             : _nameController.text.trim(),
         avatarId: _selectedAvatarId,
       );
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const MainShellScreen()),
@@ -47,69 +49,83 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: GameColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            children: [
-              // Header Title Banner
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Column(
                 children: [
-                  const Text('⚔️', style: TextStyle(fontSize: 32)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'MATH QUEST',
-                    style: TextStyle(
-                      fontFamily: 'Fredoka',
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: GameColors.skyBlueDark,
-                      shadows: [
-                        Shadow(
-                          color: GameColors.navyText.withValues(alpha: 0.15),
-                          offset: const Offset(0, 3),
-                          blurRadius: 4,
+                  // Header Title Banner
+                  const SizedBox(height: 20),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('⚔️', style: TextStyle(fontSize: 32)),
+                        const SizedBox(width: 8),
+                        Text(
+                          'MATH QUEST',
+                          style: TextStyle(
+                            fontFamily: 'Fredoka',
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: GameColors.skyBlueDark,
+                            shadows: [
+                              Shadow(
+                                color: GameColors.navyText.withValues(
+                                  alpha: 0.15,
+                                ),
+                                offset: const Offset(0, 3),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
+                  const Text(
+                    'LEARN • PLAY • LEVEL UP',
+                    style: TextStyle(
+                      fontFamily: 'Fredoka',
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: GameColors.yellowDark,
+                      letterSpacing: 2.0,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Step Content Area
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: _buildStepContent(),
+                    ),
+                  ),
+
+                  // Bottom Navigation Action
+                  const SizedBox(height: 20),
+                  GameButton(
+                    text: _step == 2 ? 'ENTER MATH QUEST!' : 'CONTINUE',
+                    backgroundColor: GameColors.sunnyYellow,
+                    shadowColor: GameColors.yellowDark,
+                    textColor: GameColors.navyText,
+                    onPressed: _nextStep,
+                    height: 58,
+                  ),
                 ],
               ),
-              const Text(
-                'LEARN • PLAY • LEVEL UP',
-                style: TextStyle(
-                  fontFamily: 'Fredoka',
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: GameColors.yellowDark,
-                  letterSpacing: 2.0,
-                ),
-              ),
-              const SizedBox(height: 30),
-
-              // Step Content Area
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _buildStepContent(),
-                ),
-              ),
-
-              // Bottom Navigation Action
-              const SizedBox(height: 20),
-              GameButton(
-                text: _step == 2 ? 'ENTER MATH QUEST!' : 'CONTINUE',
-                backgroundColor: GameColors.sunnyYellow,
-                shadowColor: GameColors.yellowDark,
-                textColor: GameColors.navyText,
-                onPressed: _nextStep,
-                height: 58,
-              ),
-            ],
+            ),
           ),
-        ),
+          const Positioned(
+            right: 12,
+            bottom: 94,
+            child: CheatCodeAccessButton(),
+          ),
+        ],
       ),
     );
   }
@@ -232,11 +248,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
             const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildAvatarChoice('hero_wizard', 'Wizard 🧙‍♂️'),
-                _buildAvatarChoice('hero_boy', 'Knight 👦'),
-                _buildAvatarChoice('hero_girl', 'Ranger 👧'),
+                Expanded(
+                  child: _buildAvatarChoice(
+                    AvatarWidget.maleWizardId,
+                    'Wizard 🧙‍♂️',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildAvatarChoice(
+                    AvatarWidget.femaleWizardId,
+                    'Female Wizard 🧙‍♀️',
+                  ),
+                ),
               ],
             ),
           ],
@@ -312,7 +337,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       onTap: () => setState(() => _selectedAvatarId = id),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? GameColors.skyBlueLight : Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -332,10 +357,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         child: Column(
           children: [
-            AvatarWidget(avatarId: id, size: 64),
-            const SizedBox(height: 8),
+            AvatarWidget(avatarId: id, size: 58),
+            const SizedBox(height: 6),
             Text(
               label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Fredoka',
                 fontSize: 13,

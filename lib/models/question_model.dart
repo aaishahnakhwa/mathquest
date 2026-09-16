@@ -26,30 +26,30 @@ class QuestionModel {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'topic': topic,
-        'difficulty': difficulty,
-        'questionText': questionText,
-        'options': options,
-        'correctAnswerIndex': correctAnswerIndex,
-        'explanationSteps': explanationSteps,
-        'hintText': hintText,
-        'xpReward': xpReward,
-        'coinReward': coinReward,
-        'gemReward': gemReward,
-      };
+    'id': id,
+    'topic': topic,
+    'difficulty': difficulty,
+    'questionText': questionText,
+    'options': options,
+    'correctAnswerIndex': correctAnswerIndex,
+    'explanationSteps': explanationSteps,
+    'hintText': hintText,
+    'xpReward': xpReward,
+    'coinReward': coinReward,
+    'gemReward': gemReward,
+  };
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) => QuestionModel(
-        id: json['id'] as String,
-        topic: json['topic'] as String,
-        difficulty: json['difficulty'] as String,
-        questionText: json['questionText'] as String,
-        options: List<String>.from(json['options'] as List),
-        correctAnswerIndex: json['correctAnswerIndex'] as int,
-        explanationSteps: List<String>.from(json['explanationSteps'] as List),
-        hintText: json['hintText'] as String,
-        xpReward: (json['xpReward'] as int?) ?? 25,
-        coinReward: (json['coinReward'] as int?) ?? 10,
-        gemReward: (json['gemReward'] as int?) ?? 1,
-      );
+    id: json['id'] as String,
+    topic: json['topic'] as String,
+    difficulty: json['difficulty'] as String,
+    questionText: json['questionText'] as String,
+    options: List<String>.from(json['options'] as List),
+    correctAnswerIndex: json['correctAnswerIndex'] as int,
+    explanationSteps: List<String>.from(json['explanationSteps'] as List),
+    hintText: json['hintText'] as String,
+    xpReward: (json['xpReward'] as int?) ?? 25,
+    coinReward: (json['coinReward'] as int?) ?? 10,
+    gemReward: (json['gemReward'] as int?) ?? 1,
+  );
 }

@@ -1,10 +1,28 @@
 import 'package:flutter/material.dart';
+
 import '../theme/colors.dart';
 
 class AvatarWidget extends StatelessWidget {
+  static const maleWizardId = 'hero_wizard';
+  static const femaleWizardId = 'hero_girl';
+  static const wizardAvatarAsset = 'assets/images/wizard_avatar.png';
+  static const femaleWizardAvatarAsset =
+      'assets/images/female_wizard_avatar.png';
+  static const wizardCharacterAsset = 'assets/images/wizard_character.png';
+  static const femaleWizardCharacterAsset = 'assets/images/female_wizard.png';
+
+  static bool isFemaleWizard(String avatarId) => avatarId == femaleWizardId;
+
+  static String? mapCharacterAssetFor(String avatarId) {
+    return switch (avatarId) {
+      maleWizardId => wizardCharacterAsset,
+      femaleWizardId => femaleWizardCharacterAsset,
+      _ => null,
+    };
+  }
+
   final String avatarId;
   final String equippedHatId;
-  final String equippedOutfitId;
   final double size;
   final bool showBorder;
 
@@ -12,15 +30,11 @@ class AvatarWidget extends StatelessWidget {
     super.key,
     required this.avatarId,
     this.equippedHatId = 'hat_wizard_starter',
-    this.equippedOutfitId = 'outfit_explorer',
     this.size = 50,
     this.showBorder = true,
   });
 
   String _getHatEmoji() {
-    if (avatarId == 'hero_wizard') {
-      return '';
-    }
     switch (equippedHatId) {
       case 'hat_crown_gold':
         return '👑';
@@ -33,22 +47,28 @@ class AvatarWidget extends StatelessWidget {
 
   String _getAvatarFace() {
     switch (avatarId) {
-      case 'hero_girl':
+      case femaleWizardId:
         return '👧';
-      case 'hero_boy':
-        return '👦';
-      case 'hero_wizard':
+      case maleWizardId:
       default:
         return '🧙‍♂️';
     }
   }
 
+  String? _getIllustratedAvatarAsset() {
+    return switch (avatarId) {
+      maleWizardId => wizardAvatarAsset,
+      femaleWizardId => femaleWizardAvatarAsset,
+      _ => null,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
-    final bool isWizard = avatarId == 'hero_wizard';
+    final illustratedAvatarAsset = _getIllustratedAvatarAsset();
     final hatEmoji = _getHatEmoji();
 
-    if (isWizard) {
+    if (illustratedAvatarAsset != null) {
       return Container(
         width: size,
         height: size,
@@ -63,11 +83,25 @@ class AvatarWidget extends StatelessWidget {
           ],
         ),
         child: ClipOval(
-          child: Image.asset(
-            'assets/images/wizard_avatar.png',
-            width: size,
-            height: size,
-            fit: BoxFit.cover,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(
+                illustratedAvatarAsset,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+              ),
+              if (hatEmoji.isNotEmpty)
+                Positioned(
+                  top: size * 0.01,
+                  right: size * 0.08,
+                  child: Text(
+                    hatEmoji,
+                    style: TextStyle(fontSize: size * 0.34),
+                  ),
+                ),
+            ],
           ),
         ),
       );
@@ -104,10 +138,7 @@ class AvatarWidget extends StatelessWidget {
               Positioned(
                 top: -size * 0.05,
                 right: size * 0.05,
-                child: Text(
-                  hatEmoji,
-                  style: TextStyle(fontSize: size * 0.35),
-                ),
+                child: Text(hatEmoji, style: TextStyle(fontSize: size * 0.35)),
               ),
           ],
         ),

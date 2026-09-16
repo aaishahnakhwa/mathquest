@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../services/audio_service.dart';
 import '../theme/colors.dart';
 
@@ -21,7 +22,10 @@ class InGameAudioDialog extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border.all(color: GameColors.skyBlueDark.withValues(alpha: 0.3), width: 2),
+        border: Border.all(
+          color: GameColors.skyBlueDark.withValues(alpha: 0.3),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
             color: GameColors.skyBlueDark.withValues(alpha: 0.2),
@@ -69,7 +73,11 @@ class InGameAudioDialog extends StatelessWidget {
                           ],
                         ),
                         child: const Center(
-                          child: Icon(Icons.music_note_rounded, color: Colors.white, size: 20),
+                          child: Icon(
+                            Icons.music_note_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -96,7 +104,9 @@ class InGameAudioDialog extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    audioService.isMusicEnabled ? 'Music: ON 🎵' : 'Music: MUTED 🔇',
+                    audioService.isMusicEnabled
+                        ? 'Music: ON 🎵'
+                        : 'Music: MUTED 🔇',
                     style: TextStyle(
                       fontFamily: 'Fredoka',
                       fontSize: 15,
@@ -119,15 +129,22 @@ class InGameAudioDialog extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.volume_down_rounded,
-                        size: 20, color: Colors.grey),
+                    const Icon(
+                      Icons.volume_down_rounded,
+                      size: 20,
+                      color: Colors.grey,
+                    ),
                     Expanded(
                       child: SliderTheme(
                         data: SliderThemeData(
                           activeTrackColor: GameColors.skyBlueDark,
-                          inactiveTrackColor: GameColors.skyBlue.withValues(alpha: 0.2),
+                          inactiveTrackColor: GameColors.skyBlue.withValues(
+                            alpha: 0.2,
+                          ),
                           thumbColor: GameColors.skyBlueDark,
-                          overlayColor: GameColors.skyBlue.withValues(alpha: 0.15),
+                          overlayColor: GameColors.skyBlue.withValues(
+                            alpha: 0.15,
+                          ),
                         ),
                         child: Slider(
                           value: audioService.musicVolume,
@@ -138,7 +155,10 @@ class InGameAudioDialog extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         gradient: GameColors.skyGradient,
                         borderRadius: BorderRadius.circular(10),

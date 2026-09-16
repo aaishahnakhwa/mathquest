@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/game_provider.dart';
 import '../theme/colors.dart';
 import 'avatar_widget.dart';
@@ -48,7 +49,6 @@ class GameHudBar extends StatelessWidget implements PreferredSizeWidget {
                           AvatarWidget(
                             avatarId: player.avatarId,
                             equippedHatId: player.equippedHatId,
-                            equippedOutfitId: player.equippedOutfitId,
                             size: 32,
                           ),
                           const SizedBox(width: 4),
@@ -68,7 +68,9 @@ class GameHudBar extends StatelessWidget implements PreferredSizeWidget {
                           const SizedBox(width: 3),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 1),
+                              horizontal: 4,
+                              vertical: 1,
+                            ),
                             decoration: BoxDecoration(
                               color: GameColors.skyBlue,
                               borderRadius: BorderRadius.circular(6),
@@ -135,7 +137,7 @@ class GameHudBar extends StatelessWidget implements PreferredSizeWidget {
                                       gradient: LinearGradient(
                                         colors: [
                                           GameColors.skyBlue,
-                                          GameColors.turquoise
+                                          GameColors.turquoise,
                                         ],
                                       ),
                                     ),
@@ -156,7 +158,9 @@ class GameHudBar extends StatelessWidget implements PreferredSizeWidget {
                         _buildCurrencyPill(
                           emoji: '💰',
                           value: '${player.coins}',
-                          bgColor: GameColors.sunnyYellow.withValues(alpha: 0.2),
+                          bgColor: GameColors.sunnyYellow.withValues(
+                            alpha: 0.2,
+                          ),
                           textColor: GameColors.yellowDark,
                         ),
                         const SizedBox(width: 2),

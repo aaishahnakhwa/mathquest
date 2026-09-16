@@ -1,6 +1,6 @@
 enum CurrencyType { coins, gems }
 
-enum ShopCategory { avatarOutfit, avatarHat, accessory, mapDecoration, boost }
+enum ShopCategory { avatarHat }
 
 class ShopItemModel {
   final String id;
@@ -25,10 +25,7 @@ class ShopItemModel {
     this.isEquipped = false,
   });
 
-  ShopItemModel copyWith({
-    bool? isUnlocked,
-    bool? isEquipped,
-  }) {
+  ShopItemModel copyWith({bool? isUnlocked, bool? isEquipped}) {
     return ShopItemModel(
       id: id,
       name: name,

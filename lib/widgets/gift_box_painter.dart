@@ -1,14 +1,12 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class GiftBoxPainter extends CustomPainter {
   final bool isOpen;
   final double openProgress; // 0.0 to 1.0
 
-  GiftBoxPainter({
-    required this.isOpen,
-    this.openProgress = 0.0,
-  });
+  GiftBoxPainter({required this.isOpen, this.openProgress = 0.0});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -24,13 +22,16 @@ class GiftBoxPainter extends CustomPainter {
     // 2. Glowing Golden Light Rays (when opening)
     if (isOpen) {
       final lightPaint = Paint()
-        ..shader = RadialGradient(
-          colors: [
-            const Color(0xFFFDE047).withValues(alpha: 0.7 * openProgress),
-            const Color(0xFFFACC15).withValues(alpha: 0.3 * openProgress),
-            Colors.transparent,
-          ],
-        ).createShader(Rect.fromCircle(center: Offset(cx, cy - 15), radius: 70));
+        ..shader =
+            RadialGradient(
+              colors: [
+                const Color(0xFFFDE047).withValues(alpha: 0.7 * openProgress),
+                const Color(0xFFFACC15).withValues(alpha: 0.3 * openProgress),
+                Colors.transparent,
+              ],
+            ).createShader(
+              Rect.fromCircle(center: Offset(cx, cy - 15), radius: 70),
+            );
 
       canvas.drawCircle(Offset(cx, cy - 15), 75, lightPaint);
     }
@@ -109,7 +110,11 @@ class GiftBoxPainter extends CustomPainter {
     canvas.drawRRect(lockRect, goldPaint);
     canvas.drawRRect(lockRect, goldBorderPaint);
     // Keyhole
-    canvas.drawCircle(Offset(cx, cy + 8), 3, Paint()..color = const Color(0xFF451A03));
+    canvas.drawCircle(
+      Offset(cx, cy + 8),
+      3,
+      Paint()..color = const Color(0xFF451A03),
+    );
 
     // 5. Chest Lid (Arched Top)
     canvas.save();
@@ -153,11 +158,7 @@ class VectorStarWidget extends StatelessWidget {
   final double size;
   final bool isFilled;
 
-  const VectorStarWidget({
-    super.key,
-    this.size = 36,
-    this.isFilled = true,
-  });
+  const VectorStarWidget({super.key, this.size = 36, this.isFilled = true});
 
   @override
   Widget build(BuildContext context) {
@@ -210,10 +211,7 @@ class _VectorStarPainter extends CustomPainter {
           ..strokeWidth = 2,
       );
     } else {
-      canvas.drawPath(
-        starPath,
-        Paint()..color = Colors.grey.shade300,
-      );
+      canvas.drawPath(starPath, Paint()..color = Colors.grey.shade300);
       canvas.drawPath(
         starPath,
         Paint()
@@ -235,10 +233,7 @@ class VectorCoinIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _VectorCoinPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _VectorCoinPainter());
   }
 }
 
@@ -285,10 +280,7 @@ class VectorGemIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _VectorGemPainter(),
-    );
+    return CustomPaint(size: Size(size, size), painter: _VectorGemPainter());
   }
 }
 
@@ -324,8 +316,16 @@ class _VectorGemPainter extends CustomPainter {
     final facetPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.6)
       ..strokeWidth = 1.2;
-    canvas.drawLine(Offset(w * 0.25, 0), Offset(w * 0.35, h * 0.35), facetPaint);
-    canvas.drawLine(Offset(w * 0.75, 0), Offset(w * 0.65, h * 0.35), facetPaint);
+    canvas.drawLine(
+      Offset(w * 0.25, 0),
+      Offset(w * 0.35, h * 0.35),
+      facetPaint,
+    );
+    canvas.drawLine(
+      Offset(w * 0.75, 0),
+      Offset(w * 0.65, h * 0.35),
+      facetPaint,
+    );
     canvas.drawLine(Offset(0, h * 0.35), Offset(w, h * 0.35), facetPaint);
   }
 

@@ -13,70 +13,26 @@ class FoundationBuilderScreen extends StatefulWidget {
   static String imageForProgress({
     required int progress,
     required int levelNumber,
+    String worldId = 'world_1',
   }) {
     final visualStage = progress.clamp(0, GameProvider.levelHouseFinalStage);
-    if (levelNumber == 3) {
-      switch (visualStage) {
-        case 0:
-          return 'assets/images/house_stage2.png';
-        case 1:
-          return 'assets/images/level3_construction_1.png';
-        case 2:
-          return 'assets/images/level3_construction_2.png';
-        case 3:
-          return 'assets/images/level3_construction_3.png';
-        case GameProvider.levelHouseFinalStage:
-        default:
-          return 'assets/images/house_stage3.png';
+    if (worldId == 'world_3' && levelNumber >= 11 && levelNumber <= 15) {
+      if (visualStage == GameProvider.levelHouseFinalStage) {
+        return 'assets/images/world3_level${levelNumber}_complete.png';
       }
+      return 'assets/images/world3_level${levelNumber}_stage$visualStage.png';
     }
-
-    if (levelNumber == 4) {
-      switch (visualStage) {
-        case 0:
-          return 'assets/images/house_stage3.png';
-        case 1:
-          return 'assets/images/level4_construction_1.png';
-        case 2:
-          return 'assets/images/level4_construction_2.png';
-        case 3:
-          return 'assets/images/level4_construction_3.png';
-        case GameProvider.levelHouseFinalStage:
-        default:
-          return 'assets/images/house_stage4.png';
+    if (worldId == 'world_2' && levelNumber >= 6 && levelNumber <= 10) {
+      if (visualStage == GameProvider.levelHouseFinalStage) {
+        return 'assets/images/world2_level${levelNumber}_complete.png';
       }
+      return 'assets/images/world2_level${levelNumber}_stage$visualStage.png';
     }
-
-    if (levelNumber == 5) {
-      switch (visualStage) {
-        case 0:
-          return 'assets/images/house_stage4.png';
-        case 1:
-          return 'assets/images/level5_construction_1.png';
-        case 2:
-          return 'assets/images/level5_construction_2.png';
-        case 3:
-          return 'assets/images/level5_construction_3.png';
-        case GameProvider.levelHouseFinalStage:
-        default:
-          return 'assets/images/house_stage5.png';
-      }
+    final buildingIndex = levelNumber.clamp(1, 5);
+    if (visualStage == GameProvider.levelHouseFinalStage) {
+      return 'assets/images/world1_level${buildingIndex}_complete.png';
     }
-
-    switch (visualStage) {
-      case 0:
-        return 'assets/images/const_stage1.png';
-      case 1:
-        return 'assets/images/construction_stage_1.png';
-      case 2:
-        return 'assets/images/construction_stage_2.png';
-      case 3:
-        return 'assets/images/construction_stage_3.png';
-      case GameProvider.levelHouseFinalStage:
-      default:
-        final finalBuildingIndex = levelNumber.clamp(1, 5);
-        return 'assets/images/house_stage$finalBuildingIndex.png';
-    }
+    return 'assets/images/world1_level${buildingIndex}_stage$visualStage.png';
   }
 
   @override
@@ -160,33 +116,96 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
     });
   }
 
-  int get _stageIndex => widget.level.levelNumber.clamp(1, 5);
+  int get _stageIndex => widget.level.worldId != 'world_1'
+      ? widget.level.levelNumber
+      : widget.level.levelNumber.clamp(1, 5);
+
+  String get _buildingName => switch (_stageIndex) {
+    1 => 'Cottage',
+    2 => 'Smithy',
+    3 => 'Village Shop',
+    4 => 'Observatory',
+    6 => 'Snow Cabin',
+    7 => 'Snow Watermill',
+    8 => 'Crystal Observatory',
+    9 => 'Frost Guildhall',
+    10 => 'Ice Castle',
+    11 => 'Leafy Cottage',
+    12 => 'Crystal Tree Sanctuary',
+    13 => 'Forest Waterfall Observatory',
+    14 => 'Forest Crystal Manor',
+    15 => 'Celestial Sanctuary',
+    _ => 'Castle',
+  };
+
+  String get _buildingIcon => switch (_stageIndex) {
+    2 => '🛠️',
+    3 => '🛍️',
+    4 => '🔭',
+    5 => '🏰',
+    6 => '❄️',
+    7 => '⚙️',
+    8 => '💎',
+    9 => '🏛️',
+    10 => '🏰',
+    11 => '🌿',
+    12 => '💎',
+    13 => '🔭',
+    14 => '🏡',
+    15 => '✨',
+    _ => '🏡',
+  };
 
   String _getStageImage() => FoundationBuilderScreen.imageForProgress(
     progress: _logsLaid,
     levelNumber: _stageIndex,
+    worldId: widget.level.worldId,
   );
 
   String _getStageTitle() {
     if (_logsLaid <= 0) {
-      return 'Stage 1/4: Empty Foundation — Lay Wood Logs to Build!';
+      if (_stageIndex == 13) {
+        return 'Small forest hut — lay wood logs to expand it!';
+      }
+      return 'Empty plot — lay wood logs to build a new home!';
     } else if (_logsLaid == 1) {
-      return 'Stage 2/4: Stone Foundation Laid!';
+      return 'Your new building is taking shape!';
     } else if (_logsLaid < _targetLogs) {
-      return 'Stage 3/4: Timber Framework Erected! ($_logsLaid/$_targetLogs Logs)';
+      return 'Building your new home ($_logsLaid/$_targetLogs logs)';
     } else {
       switch (_stageIndex) {
         case 1:
-          return 'Stage 4/4: Level 1 Cottage Completed! 🪵';
+          return 'Level 1 Cottage Completed! 🪵';
         case 2:
-          return 'Stage 4/4: Level 2 House Completed! 🪵';
+          return 'Level 2 Smithy Completed! 🛠️';
         case 3:
-          return 'Stage 4/4: Level 3 Timber House Completed! 🪵';
+          return 'Level 3 Village Shop Completed! 🛍️';
         case 4:
-          return 'Stage 4/4: Level 4 Villa Completed! 🪵';
+          return 'Level 4 Observatory Completed! 🔭';
         case 5:
+          return 'Grand Castle Completed! 🏰';
+        case 6:
+          return 'Level 6 Snow Cabin Completed! ❄️';
+        case 7:
+          return 'Level 7 Snow Watermill Completed! ⚙️';
+        case 8:
+          return 'Level 8 Crystal Observatory Completed! 💎';
+        case 9:
+          return 'Level 9 Frost Guildhall Completed! 🏛️';
+        case 10:
+          return 'Level 10 Ice Castle Completed! 🏰';
+        case 11:
+          return 'Level 11 Leafy Cottage Completed! 🌿';
+        case 12:
+          return 'Level 12 Crystal Tree Sanctuary Completed! 💎';
+        case 13:
+          return 'Level 13 Forest Waterfall Observatory Completed! 🔭';
+        case 14:
+          return 'Level 14 Forest Crystal Manor Completed! 🏡';
+        case 15:
+          return 'Level 15 Celestial Sanctuary Completed! ✨';
         default:
-          return 'Stage 4/4: Grand Fantasy House Completed! 🎉';
+          return 'Building Completed!';
       }
     }
   }
@@ -210,7 +229,7 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
-              'Level ${widget.level.levelNumber} - House Builder',
+              'Level ${widget.level.levelNumber} - $_buildingName Builder',
               style: const TextStyle(
                 fontFamily: 'Fredoka',
                 fontSize: 18,
@@ -229,30 +248,33 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '🏡 ${widget.level.title} Cottage',
-                            style: const TextStyle(
-                              fontFamily: 'Fredoka',
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$_buildingIcon Level ${widget.level.levelNumber} $_buildingName',
+                              style: const TextStyle(
+                                fontFamily: 'Fredoka',
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            _getStageTitle(),
-                            style: const TextStyle(
-                              fontFamily: 'Nunito',
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white70,
+                            const SizedBox(height: 2),
+                            Text(
+                              _getStageTitle(),
+                              style: const TextStyle(
+                                fontFamily: 'Nunito',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white70,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       // Available Wood Logs Inventory Counter Pill
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -449,7 +471,7 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text(
-                                    '🎉 House stage completed & saved to map!',
+                                    '🎉 New building completed and added to the map!',
                                     style: TextStyle(fontFamily: 'Fredoka'),
                                   ),
                                   backgroundColor: GameColors.freshGreen,
@@ -468,13 +490,17 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text('🗺️ ', style: TextStyle(fontSize: 22)),
-                                Text(
-                                  'STAGE BUILT! RETURN TO MAIN MAP →',
-                                  style: TextStyle(
-                                    fontFamily: 'Fredoka',
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                Flexible(
+                                  child: Text(
+                                    'BUILDING BUILT! RETURN TO MAIN MAP →',
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    style: TextStyle(
+                                      fontFamily: 'Fredoka',
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -505,15 +531,19 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                                   height: 24,
                                 ),
                                 const SizedBox(width: 10),
-                                Text(
-                                  player.woodLogs > 0
-                                      ? 'BUILD WITH WOOD LOG 🪵'
-                                      : 'NEED MORE WOOD LOGS!',
-                                  style: const TextStyle(
-                                    fontFamily: 'Fredoka',
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                Flexible(
+                                  child: Text(
+                                    player.woodLogs > 0
+                                        ? 'BUILD WITH WOOD LOG 🪵'
+                                        : 'NEED MORE WOOD LOGS!',
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    style: const TextStyle(
+                                      fontFamily: 'Fredoka',
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -539,13 +569,17 @@ class _FoundationBuilderScreenState extends State<FoundationBuilderScreen>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text('🗺️ ', style: TextStyle(fontSize: 18)),
-                                Text(
-                                  'RETURN TO MAIN MAP',
-                                  style: TextStyle(
-                                    fontFamily: 'Fredoka',
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: GameColors.navyText,
+                                Flexible(
+                                  child: Text(
+                                    'RETURN TO MAIN MAP',
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    style: TextStyle(
+                                      fontFamily: 'Fredoka',
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: GameColors.navyText,
+                                    ),
                                   ),
                                 ),
                               ],

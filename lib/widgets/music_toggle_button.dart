@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../services/audio_service.dart';
 import '../theme/colors.dart';
 
@@ -7,11 +8,7 @@ class MusicToggleButton extends StatelessWidget {
   final bool showLabel;
   final Color? color;
 
-  const MusicToggleButton({
-    super.key,
-    this.showLabel = false,
-    this.color,
-  });
+  const MusicToggleButton({super.key, this.showLabel = false, this.color});
 
   void _showVolumeSliderDialog(BuildContext context) {
     showDialog(
@@ -25,7 +22,10 @@ class MusicToggleButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: GameColors.skyBlueDark.withValues(alpha: 0.3), width: 2.5),
+              border: Border.all(
+                color: GameColors.skyBlueDark.withValues(alpha: 0.3),
+                width: 2.5,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: GameColors.skyBlueDark.withValues(alpha: 0.25),
@@ -83,7 +83,11 @@ class MusicToggleButton extends StatelessWidget {
                           ],
                         ),
                         IconButton(
-                          icon: const Icon(Icons.close_rounded, size: 22, color: GameColors.navyTextSecondary),
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            size: 22,
+                            color: GameColors.navyTextSecondary,
+                          ),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ],
@@ -110,7 +114,9 @@ class MusicToggleButton extends StatelessWidget {
                         Switch(
                           value: audioService.isMusicEnabled,
                           activeThumbColor: GameColors.skyBlueDark,
-                          activeTrackColor: GameColors.skyBlue.withValues(alpha: 0.3),
+                          activeTrackColor: GameColors.skyBlue.withValues(
+                            alpha: 0.3,
+                          ),
                           onChanged: (val) => audioService.toggleMusic(),
                         ),
                       ],
@@ -121,27 +127,38 @@ class MusicToggleButton extends StatelessWidget {
                     // Glossy Volume Slider Bar (Sky Blue Theme)
                     Row(
                       children: [
-                        const Icon(Icons.volume_down_rounded,
-                            size: 20, color: Colors.grey),
+                        const Icon(
+                          Icons.volume_down_rounded,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
                         Expanded(
                           child: SliderTheme(
                             data: SliderThemeData(
                               activeTrackColor: GameColors.skyBlueDark,
-                              inactiveTrackColor: GameColors.skyBlue.withValues(alpha: 0.2),
+                              inactiveTrackColor: GameColors.skyBlue.withValues(
+                                alpha: 0.2,
+                              ),
                               thumbColor: GameColors.skyBlueDark,
-                              overlayColor: GameColors.skyBlue.withValues(alpha: 0.15),
+                              overlayColor: GameColors.skyBlue.withValues(
+                                alpha: 0.15,
+                              ),
                               trackHeight: 6,
                             ),
                             child: Slider(
                               value: audioService.musicVolume,
                               min: 0.0,
                               max: 1.0,
-                              onChanged: (val) => audioService.setMusicVolume(val),
+                              onChanged: (val) =>
+                                  audioService.setMusicVolume(val),
                             ),
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             gradient: GameColors.skyGradient,
                             borderRadius: BorderRadius.circular(10),
@@ -232,7 +249,10 @@ class MusicToggleButton extends StatelessWidget {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 7,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

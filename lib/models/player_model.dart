@@ -12,8 +12,6 @@ class PlayerModel {
   final int streakDays;
   final String lastPlayDate;
   final String equippedHatId;
-  final String equippedOutfitId;
-  final String equippedAccessoryId;
   final Set<String> completedLevelIds;
   final Set<String> unlockedWorldIds;
   final Map<String, int> levelStars;
@@ -24,6 +22,12 @@ class PlayerModel {
   final int correctAnswers;
   final bool isHapticsEnabled;
   final bool autoShowExplanations;
+  final bool onboardingCompleted;
+  final String lastDailyRewardAt;
+  final String lastDailyChestAt;
+  final Set<String> claimedAchievementIds;
+  final Set<String> perfectLevelIds;
+  final int lifetimeCoinsEarned;
 
   const PlayerModel({
     this.id = 'player_1',
@@ -36,19 +40,23 @@ class PlayerModel {
     this.gems = 5, // 5 Starter Gems as requested!
     this.woodLogs = 5, // 5 Starter Wood Logs!
     this.buildingStages = const {},
-    this.streakDays = 1,
+    this.streakDays = 0,
     this.lastPlayDate = '',
-    this.equippedHatId = 'none',
-    this.equippedOutfitId = 'default_explorer',
-    this.equippedAccessoryId = 'none',
+    this.equippedHatId = 'hat_wizard_starter',
     this.completedLevelIds = const {},
     this.unlockedWorldIds = const {'world_1'},
     this.levelStars = const {},
-    this.inventoryItemIds = const ['default_explorer'],
+    this.inventoryItemIds = const ['hat_wizard_starter'],
     this.questionsSolved = 0,
     this.correctAnswers = 0,
     this.isHapticsEnabled = true,
     this.autoShowExplanations = true,
+    this.onboardingCompleted = false,
+    this.lastDailyRewardAt = '',
+    this.lastDailyChestAt = '',
+    this.claimedAchievementIds = const {},
+    this.perfectLevelIds = const {},
+    this.lifetimeCoinsEarned = 100,
   });
 
   int get xpForNextLevel => level * 100;
@@ -79,8 +87,6 @@ class PlayerModel {
     int? streakDays,
     String? lastPlayDate,
     String? equippedHatId,
-    String? equippedOutfitId,
-    String? equippedAccessoryId,
     Set<String>? completedLevelIds,
     Set<String>? unlockedWorldIds,
     Map<String, int>? levelStars,
@@ -89,6 +95,12 @@ class PlayerModel {
     int? correctAnswers,
     bool? isHapticsEnabled,
     bool? autoShowExplanations,
+    bool? onboardingCompleted,
+    String? lastDailyRewardAt,
+    String? lastDailyChestAt,
+    Set<String>? claimedAchievementIds,
+    Set<String>? perfectLevelIds,
+    int? lifetimeCoinsEarned,
   }) {
     return PlayerModel(
       id: id ?? this.id,
@@ -104,8 +116,6 @@ class PlayerModel {
       streakDays: streakDays ?? this.streakDays,
       lastPlayDate: lastPlayDate ?? this.lastPlayDate,
       equippedHatId: equippedHatId ?? this.equippedHatId,
-      equippedOutfitId: equippedOutfitId ?? this.equippedOutfitId,
-      equippedAccessoryId: equippedAccessoryId ?? this.equippedAccessoryId,
       completedLevelIds: completedLevelIds ?? this.completedLevelIds,
       unlockedWorldIds: unlockedWorldIds ?? this.unlockedWorldIds,
       levelStars: levelStars ?? this.levelStars,
@@ -114,6 +124,13 @@ class PlayerModel {
       correctAnswers: correctAnswers ?? this.correctAnswers,
       isHapticsEnabled: isHapticsEnabled ?? this.isHapticsEnabled,
       autoShowExplanations: autoShowExplanations ?? this.autoShowExplanations,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+      lastDailyRewardAt: lastDailyRewardAt ?? this.lastDailyRewardAt,
+      lastDailyChestAt: lastDailyChestAt ?? this.lastDailyChestAt,
+      claimedAchievementIds:
+          claimedAchievementIds ?? this.claimedAchievementIds,
+      perfectLevelIds: perfectLevelIds ?? this.perfectLevelIds,
+      lifetimeCoinsEarned: lifetimeCoinsEarned ?? this.lifetimeCoinsEarned,
     );
   }
 
@@ -132,8 +149,6 @@ class PlayerModel {
       'streakDays': streakDays,
       'lastPlayDate': lastPlayDate,
       'equippedHatId': equippedHatId,
-      'equippedOutfitId': equippedOutfitId,
-      'equippedAccessoryId': equippedAccessoryId,
       'completedLevelIds': completedLevelIds.toList(),
       'unlockedWorldIds': unlockedWorldIds.toList(),
       'levelStars': levelStars,
@@ -142,6 +157,12 @@ class PlayerModel {
       'correctAnswers': correctAnswers,
       'isHapticsEnabled': isHapticsEnabled,
       'autoShowExplanations': autoShowExplanations,
+      'onboardingCompleted': onboardingCompleted,
+      'lastDailyRewardAt': lastDailyRewardAt,
+      'lastDailyChestAt': lastDailyChestAt,
+      'claimedAchievementIds': claimedAchievementIds.toList(),
+      'perfectLevelIds': perfectLevelIds.toList(),
+      'lifetimeCoinsEarned': lifetimeCoinsEarned,
     };
   }
 
@@ -149,7 +170,9 @@ class PlayerModel {
     return PlayerModel(
       id: map['id'] ?? 'player_1',
       name: map['name'] ?? 'Math Explorer',
-      avatarId: map['avatarId'] ?? 'owl_guide',
+      avatarId: map['avatarId'] == 'hero_boy'
+          ? 'hero_wizard'
+          : map['avatarId'] ?? 'owl_guide',
       level: map['level'] ?? 1,
       currentXp: map['currentXp'] ?? 0,
       totalXp: map['totalXp'] ?? 0,
@@ -157,23 +180,37 @@ class PlayerModel {
       gems: map['gems'] ?? 5,
       woodLogs: map['woodLogs'] ?? 5,
       buildingStages: Map<String, int>.from(map['buildingStages'] ?? {}),
-      streakDays: map['streakDays'] ?? 1,
+      streakDays: map['streakDays'] ?? 0,
       lastPlayDate: map['lastPlayDate'] ?? '',
-      equippedHatId: map['equippedHatId'] ?? 'none',
-      equippedOutfitId: map['equippedOutfitId'] ?? 'default_explorer',
-      equippedAccessoryId: map['equippedAccessoryId'] ?? 'none',
+      equippedHatId: map['equippedHatId'] ?? 'hat_wizard_starter',
       completedLevelIds: Set<String>.from(map['completedLevelIds'] ?? []),
       unlockedWorldIds: Set<String>.from(
         map['unlockedWorldIds'] ?? ['world_1'],
       ),
       levelStars: Map<String, int>.from(map['levelStars'] ?? {}),
       inventoryItemIds: List<String>.from(
-        map['inventoryItemIds'] ?? ['default_explorer'],
+        map['inventoryItemIds'] ?? ['hat_wizard_starter'],
       ),
       questionsSolved: map['questionsSolved'] ?? 0,
       correctAnswers: map['correctAnswers'] ?? 0,
       isHapticsEnabled: map['isHapticsEnabled'] ?? true,
       autoShowExplanations: map['autoShowExplanations'] ?? true,
+      onboardingCompleted:
+          map['onboardingCompleted'] ??
+          ((map['questionsSolved'] ?? 0) > 0 ||
+              Map<String, dynamic>.from(map['levelStars'] ?? {}).isNotEmpty),
+      lastDailyRewardAt: map['lastDailyRewardAt'] ?? '',
+      lastDailyChestAt: map['lastDailyChestAt'] ?? '',
+      claimedAchievementIds: Set<String>.from(
+        map['claimedAchievementIds'] ?? const [],
+      ),
+      perfectLevelIds: Set<String>.from(
+        map['perfectLevelIds'] ??
+            Map<String, int>.from(map['levelStars'] ?? const {}).entries
+                .where((entry) => entry.value == 3)
+                .map((entry) => entry.key),
+      ),
+      lifetimeCoinsEarned: map['lifetimeCoinsEarned'] ?? map['coins'] ?? 100,
     );
   }
 
